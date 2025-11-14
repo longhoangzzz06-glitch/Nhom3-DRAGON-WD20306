@@ -70,7 +70,7 @@ class HDVModel
     public function deleteHDV($id)
     {
         $photo = $this->getPhotoById($id);
-        if ($photo) {
+        if ($photo) {.
             $photoPath = 'uploads/img_HDV/' . $photo;
             if (file_exists($photoPath)) {
                 unlink($photoPath);
