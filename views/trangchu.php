@@ -6,7 +6,6 @@
     <title>Document</title>
 </head>
 <body>
-    <h1><?php echo $title; ?></h1>
-    <h2><?php echo $thoiTiet; ?></h2>
+    <h1>Trang chủ</h1>
 </body>
 </html>
