@@ -1,5 +1,4 @@
 <?php
-require_once 'models/Feedback.php';
 
 class FeedbackController {
     private $model;
@@ -8,64 +7,93 @@ class FeedbackController {
         $this->model = new Feedback($db);
     }
 
-    public function list() {
+    public function index() {
         $feedbacks = $this->model->getAll();
-        include 'views/feedback/list.php';
+        require PATH_ROOT . 'views/feedback/index.php';
     }
 
-    public function add() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $data = [
-                'tour_id' => $_POST['tour_id'],
-                'customer_id' => $_POST['customer_id'],
-                'supplier_id' => $_POST['supplier_id'] ?? null,
-                'rating' => $_POST['rating'],
-                'comment' => $_POST['comment']
-            ];
-            $this->model->add($data);
-            header("Location: index.php?controller=feedback&action=list");
+    public function create() {
+        require PATH_ROOT . 'views/feedback/add.php';
+    }
+
+    public function store() {
+        $image = $this->handleImageUpload($_FILES['image'] ?? null);
+
+        $data = [
+            'tour_id' => $_POST['tour_id'] ?? null,
+            'supplier_id' => $_POST['supplier_id'] ?? null,
+            'customer_name' => $_POST['customer_name'],
+            'customer_phone' => $_POST['customer_phone'],
+            'rating_tour' => $_POST['rating_tour'],
+            'rating_service' => $_POST['rating_service'],
+            'rating_staff' => $_POST['rating_staff'],
+            'comment' => $_POST['comment'] ?? null,
+            'image' => $image
+        ];
+
+        $this->model->create($data);
+        header("Location: index.php?act=feedback");
+        exit;
+    }
+
+    public function edit() {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header("Location: index.php?act=feedback");
+            exit;
         }
-        include 'views/feedback/add.php';
-    }
-
-    public function edit($id) {
         $feedback = $this->model->getById($id);
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $data = [
-                'tour_id' => $_POST['tour_id'],
-                'customer_id' => $_POST['customer_id'],
-                'supplier_id' => $_POST['supplier_id'] ?? null,
-                'rating' => $_POST['rating'],
-                'comment' => $_POST['comment']
-            ];
-            $this->model->update($id, $data);
-            header("Location: index.php?controller=feedback&action=list");
-        }
-        include 'views/feedback/edit.php';
+        require PATH_ROOT . 'views/feedback/edit.php';
     }
+
     public function update() {
-        if (isset($_POST['id'])) {
-            $id = $_POST['id'];
-            $data = [
-                'tour_id' => $_POST['tour_id'],
-                'customer_id' => $_POST['customer_id'],
-                'supplier_id' => $_POST['supplier_id'] ?? null,
-                'rating' => $_POST['rating'],
-                'comment' => $_POST['comment']
-            ];
-
-            if ($this->model->update($id, $data)) {
-                header("Location: index.php?controller=Feedback&action=index&msg=success");
-                exit;
-            } else {
-                echo "Update failed!";
-            }
+        $id = $_POST['id'] ?? null;
+        if (!$id) {
+            header("Location: index.php?act=feedback");
+            exit;
         }
+
+        $image = $_POST['image_old'] ?? null;
+        if (!empty($_FILES['image']['name'])) {
+            $image = $this->handleImageUpload($_FILES['image']);
+        }
+
+        $data = [
+            'tour_id' => $_POST['tour_id'] ?? null,
+            'supplier_id' => $_POST['supplier_id'] ?? null,
+            'customer_name' => $_POST['customer_name'],
+            'customer_phone' => $_POST['customer_phone'],
+            'rating_tour' => $_POST['rating_tour'],
+            'rating_service' => $_POST['rating_service'],
+            'rating_staff' => $_POST['rating_staff'],
+            'comment' => $_POST['comment'] ?? null,
+            'image' => $image
+        ];
+
+        $this->model->update($id, $data);
+        header("Location: index.php?act=feedback");
+        exit;
     }
 
+    public function delete() {
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $this->model->delete($id);
+        }
+        header("Location: index.php?act=feedback");
+        exit;
+    }
 
-    public function delete($id) {
-        $this->model->delete($id);
-        header("Location: index.php?controller=feedback&action=list");
+    private function handleImageUpload($file) {
+        if (empty($file) || empty($file['name'])) {
+            return "";
+        }
+        $filename = time() . "_" . basename($file['name']);
+        $uploadDir = PATH_ROOT . 'uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        move_uploaded_file($file['tmp_name'], $uploadDir . $filename);
+        return $filename;
     }
 }

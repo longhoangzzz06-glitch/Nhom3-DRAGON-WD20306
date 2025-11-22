@@ -69,7 +69,7 @@ class HDVController
     // function xử lý thêm HDV
     public function viewThemHDV()
     {
-        include './views/quanly_HDV/add_HDV.php';
+        include './views/quanly_HDV/add.php';
     }
 
     public function addHDV($data)

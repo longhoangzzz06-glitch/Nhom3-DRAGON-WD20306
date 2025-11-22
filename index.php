@@ -46,7 +46,7 @@ match ($act) {
     'feedback-update'      => (new FeedbackController($db))->update(),
     // Xử lý đánh giá
     'suppliers'            => (new SupplierController($db))->index(),
-    'supplier-add'         => (new SupplierController($db))->create(),
+    'supplier-add'         => (new SupplierController($db))->createSupplier(),
     'supplier-store'       => (new SupplierController($db))->store(),
     'supplier-edit'        => (new SupplierController($db))->edit(),
     'supplier-update'      => (new SupplierController($db))->update(),
@@ -66,4 +66,5 @@ match ($act) {
 
     'supplier-compare-quotes'  => (new SupplierController($db))->compareQuotes(),
     'supplier-summary'         => (new SupplierController($db))->supplierSummary(),
+
 };
