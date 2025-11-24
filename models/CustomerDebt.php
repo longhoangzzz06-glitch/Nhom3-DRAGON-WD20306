@@ -1,8 +1,8 @@
 <?php
-class SupplierDebt
+class CustomerDebt
 {
     private $db;
-    private $table = 'supplier_debts';
+    private $table = 'customer_debts';
 
     public function __construct()
     {
@@ -12,11 +12,11 @@ class SupplierDebt
 
     public function getAll()
     {
-        $sql = "SELECT d.*, s.name AS supplier_name, c.title AS contract_title,
-                       (d.total_cost - d.paid_amount) AS remaining_debt
+        $sql = "SELECT d.*, c.customer_name, t.tour_name,
+                       (d.total_price - d.paid_amount) AS remaining_debt
                 FROM {$this->table} d
-                JOIN suppliers s ON d.supplier_id = s.id
-                JOIN supplier_contracts c ON d.contract_id = c.id
+                JOIN customers c ON d.customer_id = c.id
+                JOIN tours t ON d.tour_id = t.id
                 ORDER BY d.created_at DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
@@ -30,56 +30,42 @@ class SupplierDebt
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getBySupplier($supplier_id)
+    public function getByCustomerId($customer_id)
     {
-        $sql = "SELECT d.*, c.title AS contract_title,
-                       (d.total_cost - d.paid_amount) AS remaining_debt
+        $sql = "SELECT d.*, t.tour_name,
+                       (d.total_price - d.paid_amount) AS remaining_debt
                 FROM {$this->table} d
-                JOIN supplier_contracts c ON d.contract_id = c.id
-                WHERE d.supplier_id = ?
+                JOIN tours t ON d.tour_id = t.id
+                WHERE d.customer_id = ?
                 ORDER BY d.created_at DESC";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$supplier_id]);
+        $stmt->execute([$customer_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getTotalDebtBySupplier($supplier_id)
+    public function getTotalDebtByCustomer($customer_id)
     {
         $stmt = $this->db->prepare(
-            "SELECT SUM(total_cost - paid_amount) AS total_debt 
+            "SELECT SUM(total_price - paid_amount) AS total_debt 
              FROM {$this->table} 
-             WHERE supplier_id = ?"
+             WHERE customer_id = ?"
         );
-        $stmt->execute([$supplier_id]);
+        $stmt->execute([$customer_id]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return (float)($result['total_debt'] ?? 0);
-    }
-
-    public function getOutstandingDebts()
-    {
-        $sql = "SELECT d.*, s.name AS supplier_name, c.title AS contract_title,
-                       (d.total_cost - d.paid_amount) AS remaining_debt
-                FROM {$this->table} d
-                JOIN suppliers s ON d.supplier_id = s.id
-                JOIN supplier_contracts c ON d.contract_id = c.id
-                WHERE (d.total_cost - d.paid_amount) > 0
-                ORDER BY d.created_at ASC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
-                (supplier_id, contract_id, total_cost, paid_amount, last_payment_date, note)
+                (customer_id, tour_id, total_price, paid_amount, last_payment_date, note)
                 VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute([
-            $data['supplier_id'] ?? null,
-            $data['contract_id'] ?? null,
-            (float)($data['total_cost'] ?? 0),
+            $data['customer_id'] ?? null,
+            $data['tour_id'] ?? null,
+            (float)($data['total_price'] ?? 0),
             (float)($data['paid_amount'] ?? 0),
             $data['last_payment_date'] ?? null,
             $data['note'] ?? null
@@ -89,14 +75,14 @@ class SupplierDebt
     public function update($id, $data)
     {
         $sql = "UPDATE {$this->table}
-                SET supplier_id=?, contract_id=?, total_cost=?, paid_amount=?, last_payment_date=?, note=?, updated_at=NOW()
+                SET customer_id=?, tour_id=?, total_price=?, paid_amount=?, last_payment_date=?, note=?, updated_at=NOW()
                 WHERE id=?";
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute([
-            $data['supplier_id'] ?? null,
-            $data['contract_id'] ?? null,
-            (float)($data['total_cost'] ?? 0),
+            $data['customer_id'] ?? null,
+            $data['tour_id'] ?? null,
+            (float)($data['total_price'] ?? 0),
             (float)($data['paid_amount'] ?? 0),
             $data['last_payment_date'] ?? null,
             $data['note'] ?? null,
@@ -110,19 +96,33 @@ class SupplierDebt
         return $stmt->execute([$id]);
     }
 
-    public function addPayment($supplier_debt_id, $amount)
+    public function getOutstandingDebts()
+    {
+        $sql = "SELECT d.*, c.customer_name, t.tour_name,
+                       (d.total_price - d.paid_amount) AS remaining_debt
+                FROM {$this->table} d
+                JOIN customers c ON d.customer_id = c.id
+                JOIN tours t ON d.tour_id = t.id
+                WHERE (d.total_price - d.paid_amount) > 0
+                ORDER BY d.created_at ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addPayment($customer_debt_id, $amount)
     {
         try {
             $this->db->beginTransaction();
 
             // Get current debt
-            $debt = $this->getById($supplier_debt_id);
+            $debt = $this->getById($customer_debt_id);
             if (!$debt) {
                 throw new Exception("Công nợ không tồn tại");
             }
 
             $newPaidAmount = $debt['paid_amount'] + $amount;
-            if ($newPaidAmount > $debt['total_cost']) {
+            if ($newPaidAmount > $debt['total_price']) {
                 throw new Exception("Số tiền thanh toán vượt quá số nợ");
             }
 
@@ -132,7 +132,7 @@ class SupplierDebt
                  SET paid_amount = paid_amount + ?, last_payment_date = NOW()
                  WHERE id = ?"
             );
-            $stmt->execute([$amount, $supplier_debt_id]);
+            $stmt->execute([$amount, $customer_debt_id]);
 
             $this->db->commit();
             return true;
