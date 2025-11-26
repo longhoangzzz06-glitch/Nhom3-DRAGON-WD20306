@@ -14,15 +14,15 @@ require_once './models/HDVModel.php';
 // Route
 $act = $_GET['act'] ?? '/';
 
-
 // Để bảo bảo tính chất chỉ gọi 1 hàm Controller để xử lý request thì mình sử dụng match
+
 
 match ($act) {
     // Trang chủ
-    'home' => (new HomeController())->home(),
-    // Trang quản lý hướng dẫn viên
+    '/', 'trang-chu' => (new HDVController())->DanhSach(),
+    /* Trang quản lý hướng dẫn viên */
     // Hiển thị danh sách hướng dẫn viên
-    '/'=> (new HDVController())->DanhSach(),
+    'quan-ly-hdv'=> (new HDVController())->DanhSach(),
     // Xử lý thêm hướng dẫn viên
     'view-them-hdv'=> (new HDVController())->viewThemHDV(),
     'them-hdv'=> (new HDVController())->addHDV($_POST),
@@ -31,4 +31,5 @@ match ($act) {
     // Xử lý cập nhật hướng dẫn viên
     'view-cap-nhat-hdv'=> (new HDVController())->viewCapNhatHDV($_GET['id']),
     'cap-nhat-hdv'=> (new HDVController())->editHDV($_GET['id'], $_POST),
+    /*  */
 };

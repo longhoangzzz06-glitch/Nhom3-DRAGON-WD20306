@@ -1,9 +1,8 @@
 
 body {
     font-family: system-ui, sans-serif;
-    background: #f7f7f8;
+    background: white;
     color: #111;
-    margin: 40px;
 }
 
 h1 {
@@ -146,31 +145,6 @@ tr:hover {
     background: #f3f4f6;
 }
 
-.stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-}
-
-.stat-card {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.stat-title {
-    color: #666;
-    font-size: 14px;
-}
-
-.stat-value {
-    font-size: 24px;
-    font-weight: 700;
-    margin-top: 4px;
-}
-
 .empty-message {
     text-align: center;
     padding: 40px 20px;
@@ -206,7 +180,7 @@ tr:hover {
 }
 
 .search-group input {
-    width: 100%;
+    width: 250px;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 6px;
@@ -258,7 +232,7 @@ tr:hover {
 
 .modal-content {
     background-color: #fefefe;
-    margin: 5% auto;
+    margin: 50px auto;
     padding: 20px;
     border: 1px solid #888;
     border-radius: 10px;
@@ -271,7 +245,6 @@ tr:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
     border-bottom: 1px solid #eee;
     padding-bottom: 12px;
 }
@@ -350,5 +323,5 @@ tr:hover {
 
 .btn-add-guide {
     padding: 10px 16px;
-    margin-left: 590px;
+    margin-left: 500px;
 }

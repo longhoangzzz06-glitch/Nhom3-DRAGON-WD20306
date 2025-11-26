@@ -1,3 +1,10 @@
+<?php
+// Định nghĩa module hiện tại
+$currentModule = 'hdv';
+
+// Include dieu-huong
+include './views/chung/dieu-huong.php';
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -5,11 +12,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thêm Hướng dẫn viên</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="./views/quanly_HDV/css/add_HDV.css" />
+    <link rel="stylesheet" href="./views/quanly_HDV/css/them_HDV.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>Thêm Hướng dẫn viên mới</h1>
+    <div class="content-wrapper">
+        <div class="content-container">
+            <div class="container">
+                <h1>Thêm Hướng dẫn viên mới</h1>
 
         <form action="index.php?act=them-hdv" method="POST" enctype="multipart/form-data">
 
@@ -67,11 +76,13 @@
                 </select>
             </div>
 
-            <div class="button-group">
-                <button type="submit" class="btn-submit">Thêm Hướng dẫn viên</button>
-                <button type="button" class="btn-cancel" onclick="window.location.href='index.php?act=/'">Hủy</button>
+                <div class="button-group">
+                    <button type="submit" class="btn-submit">Thêm Hướng dẫn viên</button>
+                    <button type="button" class="btn-cancel" onclick="window.location.href='index.php?act=/'">Hủy</button>
+                </div>
+            </form>
             </div>
-        </form>
+        </div>
     </div>
 
     <script>

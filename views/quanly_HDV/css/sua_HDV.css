@@ -1,7 +1,6 @@
-
 body {
     font-family: system-ui, sans-serif;
-    background: #f7f7f8;
+    background: #ffffff;
     color: #111;
     padding: 0;
     margin: 0;
@@ -45,8 +44,10 @@ textarea {
     min-height: 100px;
 }
 .photo-preview {
-    margin-top: 5px;
+    margin: 5px 0;
     max-width: 150px;
+    height: 150px;
+    object-fit: cover;
     border-radius: 6px;
 }
 .button-group {

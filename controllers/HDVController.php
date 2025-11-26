@@ -15,37 +15,28 @@ class HDVController
         if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK){
             return null; // Không có file được tải lên hoặc có lỗi
         }
-
         // Tạo thư mục nếu chưa tồn tại
         if (!is_dir($targetDir)){
             mkdir($targetDir, 0777, true);
         }
-
         $fileName = time() . '_' . basename($_FILES[$fieldName]['name']);
         $targetPath = $targetDir . $fileName;
-
         // Kiểm tra phần mở rộng
         $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
         if (!in_array($ext, $allowed)){
             return null;
         }
-
         if (move_uploaded_file($_FILES[$fieldName]['tmp_name'], $targetPath)){
             return $fileName; // trả về tên file để lưu vào DB
         }
-
         return null; // upload lỗi
     }
 
     //function xử lý trang hiển thị danh sách HDV
     public function DanhSach()
     {
-        // Lấy dữ liệu từ model
         $dsHDV = $this->modelHDV->getAllHDV();
-
-        // Gọi view để hiển thị dữ liệu
         include './views/quanly_HDV/danhsach_HDV.php';
     }
 
@@ -54,13 +45,10 @@ class HDVController
     {
         // Xử lý ảnh
         $photo = $this->uploadPhoto('photo', 'uploads/img_HDV/');
-
         // Gắn ảnh vào mảng data
         $data['photo'] = $photo;
-
         // Gọi Model thêm vào DB
         $this->modelHDV->addHDV($data);
-
         // Chuyển hướng về trang danh sách HDV
         header('Location: index.php');
         exit();
@@ -69,7 +57,7 @@ class HDVController
     // function xử lý thêm HDV
     public function viewThemHDV()
     {
-        include './views/quanly_HDV/add_HDV.php';
+        include './views/quanly_HDV/them_HDV.php';
     }
 
     public function addHDV($data)
@@ -77,13 +65,11 @@ class HDVController
         // Đảm bảo các trường bắt buộc đã được nhập
         $requiredFields = ['full_name', 'birth_date', 'phone', 'email'];
         $missingFields = [];
-        
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
                 $missingFields[] = $field;
             }
         }
-        
         if (!empty($missingFields)) {
             $fieldNames = [
                 'full_name' => 'Họ tên',
@@ -91,7 +77,6 @@ class HDVController
                 'phone' => 'Điện thoại',
                 'email' => 'Email'
             ];
-            
             $missingLabels = array_map(function($field) use ($fieldNames) {
                 return $fieldNames[$field] ?? $field;
             }, $missingFields);
@@ -104,13 +89,18 @@ class HDVController
             exit();
         }
         
+        // Xử lý giá trị trống cho các trường số
+        if (empty($data['experience_years'])) {
+            $data['experience_years'] = 0;
+        } else {
+            $data['experience_years'] = intval($data['experience_years']);
+        }
+        
         // Xử lý upload ảnh
         $photo = $this->uploadPhoto('photo', 'uploads/img_HDV/');
-        
         if ($photo === null) {
             $photo = '';
         }
-        
         $data['photo'] = $photo;
         
         // Thêm vào DB với xử lý lỗi
@@ -192,7 +182,7 @@ class HDVController
         $hdv = $this->modelHDV->getHDVById($id);
 
         // Gọi view để hiển thị form cập nhật
-        include './views/quanly_HDV/edit_HDV.php';
+        include './views/quanly_HDV/xoa_HDV.php';
     }
 
     // function xử lý cập nhật HDV theo ID
@@ -227,6 +217,13 @@ class HDVController
                     window.history.back();
                 </script>";
                 exit();
+            }
+            
+            // Xử lý giá trị trống cho các trường số
+            if (empty($data['experience_years'])) {
+                $data['experience_years'] = 0;
+            } else {
+                $data['experience_years'] = intval($data['experience_years']);
             }
             
             // Xử lý upload ảnh nếu có file mới
