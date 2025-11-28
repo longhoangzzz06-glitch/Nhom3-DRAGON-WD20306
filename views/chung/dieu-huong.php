@@ -11,12 +11,12 @@
     <nav class="sidebar-nav">
         <ul class="nav-list">
             <!-- Trang chủ -->
-            <li class="nav-item" id="nav-dashboard">
+            <!-- <li class="nav-item" id="nav-dashboard">
                 <a href="index.php" class="nav-link">
                     <span class="nav-icon">📊</span>
                     <span class="nav-text">Trang chủ</span>
                 </a>
-            </li>
+            </li> -->
 
             <!-- Quản lý Hướng dẫn viên -->
             <li class="nav-item" id="nav-hdv">
@@ -28,13 +28,13 @@
 
             <!-- Quản lý Tour -->
             <li class="nav-item" id="nav-tour">
-                <a href="index.php?act=tour" class="nav-link">
+                <a href="index.php?act=quan-ly-tours" class="nav-link">
                     <span class="nav-icon">🗺️</span>
                     <span class="nav-text">Quản lý Tour</span>
                 </a>
             </li>
 
-            <!-- Quản lý Khách hàng -->
+            <!-- Quản lý Khách hàng
             <li class="nav-item" id="nav-customer">
                 <a href="index.php?act=customer" class="nav-link">
                     <span class="nav-icon">🧑</span>
@@ -42,13 +42,13 @@
                 </a>
             </li>
 
-            <!-- Cài đặt -->
+            Cài đặt
             <li class="nav-item" id="nav-settings">
                 <a href="index.php?act=settings" class="nav-link">
                     <span class="nav-icon">⚙️</span>
                     <span class="nav-text">Cài đặt</span>
                 </a>
-            </li>
+            </li> -->
         </ul>
     </nav>
 

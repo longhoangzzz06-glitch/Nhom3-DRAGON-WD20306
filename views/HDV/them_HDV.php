@@ -12,7 +12,7 @@ include './views/chung/dieu-huong.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thêm Hướng dẫn viên</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="./views/quanly_HDV/css/them_HDV.css" />
+    <link rel="stylesheet" href="./views/HDV/css/them_HDV.css" />
 </head>
 <body>
     <div class="content-wrapper">
@@ -23,10 +23,10 @@ include './views/chung/dieu-huong.php';
         <form action="index.php?act=them-hdv" method="POST" enctype="multipart/form-data">
 
             <div class="form-group">
-                <label for="photo">Ảnh: <span style="color: red;">*</span></label>
+                <label for="anh">Ảnh: <span style="color: red;">*</span></label>
                 <div class="file-input-wrapper">
-                    <input type="file" id="photo" name="photo" accept="image/*" required>
-                    <label for="photo" class="file-input-label" id="photoLabel">
+                    <input type="file" id="anh" name="anh" accept="image/*" required>
+                    <label for="anh" class="file-input-label" id="anhLabel">
                         <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh
                     </label>
                 </div>
@@ -34,18 +34,18 @@ include './views/chung/dieu-huong.php';
             </div>            
 
             <div class="form-group">
-                <label for="full_name">Họ Tên: <span style="color: red;">*</span></label>
-                <input type="text" id="full_name" name="full_name" required>
+                <label for="hoTen">Họ Tên: <span style="color: red;">*</span></label>
+                <input type="text" id="hoTen" name="hoTen" required>
             </div>
 
             <div class="form-group">
-                <label for="birth_date">Ngày Sinh: <span style="color: red;">*</span></label>
-                <input type="date" id="birth_date" name="birth_date" required>
+                <label for="ngaySinh">Ngày Sinh: <span style="color: red;">*</span></label>
+                <input type="date" id="ngaySinh" name="ngaySinh" required>
             </div>
 
             <div class="form-group">
-                <label for="phone">Số Điện Thoại: <span style="color: red;">*</span></label>
-                <input type="text" id="phone" name="phone" required>
+                <label for="dienThoai">Số Điện Thoại: <span style="color: red;">*</span></label>
+                <input type="text" id="dienThoai" name="dienThoai" required>
             </div>
 
             <div class="form-group">
@@ -54,23 +54,43 @@ include './views/chung/dieu-huong.php';
             </div>
 
             <div class="form-group">
-                <label for="languages">Ngôn Ngữ:</label>
-                <input type="text" id="languages" name="languages">
+                <label for="ngonNgu">Ngôn Ngữ:</label>
+                <input type="text" id="ngonNgu" name="ngonNgu">
             </div>
 
             <div class="form-group">
-                <label for="experience_years">Kinh Nghiệm (năm):</label>
-                <input type="number" id="experience_years" name="experience_years">
+                <label for="kinhNghiem">Kinh Nghiệm (năm):</label>
+                <input type="number" id="kinhNghiem" name="kinhNghiem">
             </div>
 
             <div class="form-group">
-                <label for="health_status">Tình Trạng Sức Khỏe:</label>
-                <input type="text" id="health_status" name="health_status">
+                <label for="nhomHDV_id">Loại Nhóm:</label>
+                <select name="nhomHDV_id" id="nhomHDV_id">
+                    <option value="">Chọn Loại Nhóm</option>
+                    <?php
+                    // Query danh sách nhóm HDV từ DB
+                        $nhomList = (new HDVController())->getAllNhomHDV();
+                        
+                        foreach ($nhomList as $nhom) {
+                            echo '<option value="' . htmlspecialchars($nhom['id']) . '">' . htmlspecialchars($nhom['ten']) . '</option>';
+                        }
+                    ?>
+                </select>
             </div>
 
             <div class="form-group">
-                <label for="status">Trạng Thái:</label>
-                <select id="status" name="status">
+                <label for="sucKhoe">Tình Trạng Sức Khỏe:</label>
+                <select name="sucKhoe" id="sucKhoe">
+                    <option value="Tốt">Tốt</option>
+                    <option value="Khá">Khá</option>
+                    <option value="Trung bình">Trung bình</option>
+                    <option value="Kém">Kém</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="trangThai">Trạng Thái:</label>
+                <select id="trangThai" name="trangThai">
                     <option value="Đang Hoạt Động">Đang Hoạt Động</option>
                     <option value="Không Hoạt Động">Không Hoạt Động</option>
                 </select>
@@ -86,10 +106,10 @@ include './views/chung/dieu-huong.php';
     </div>
 
     <script>
-        const photoInput = document.getElementById('photo');
-        const photoLabel = document.getElementById('photoLabel');
-        const birthDatePicker = document.getElementById('birth_date_picker');
-        const birthDateHidden = document.getElementById('birth_date_hidden');
+        const photoInput = document.getElementById('anh');
+        const photoLabel = document.getElementById('anhLabel');
+        const birthDatePicker = document.getElementById('ngaySinh_picker');
+        const birthDateHidden = document.getElementById('ngaySinh_hidden');
 
         photoInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {

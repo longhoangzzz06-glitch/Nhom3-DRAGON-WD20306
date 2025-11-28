@@ -11,17 +11,26 @@ class HDVModel
     // Lấy dữ liệu tất cả hướng dẫn viên
     public function getAllHDV()
     {
-        $sql = "SELECT * FROM guides";
+        $sql = "SELECT hdv.*, hdv_nhom.ten as nhom_ten FROM hdv LEFT JOIN hdv_nhom ON hdv.nhomHDV_id = hdv_nhom.id GROUP BY hdv.id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         $hdvList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $hdvList;
     }
 
+    public function getAllNhomHDV()
+    {
+        $sql = "SELECT * FROM hdv_nhom";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        $nhomHDV = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $nhomHDV;
+    }
+
     // Lấy dữ liệu hướng dẫn viên theo ID
     public function getHDVById($id)
     {
-        $sql = "SELECT * FROM guides WHERE guide_id = :id";
+        $sql = "SELECT hdv.*, hdv_nhom.ten FROM hdv LEFT JOIN hdv_nhom ON hdv.nhomHDV_id = hdv_nhom.id WHERE hdv.id = :id GROUP BY hdv.id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(['id' => $id]);
         $hdv = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -31,52 +40,53 @@ class HDVModel
     // Thêm hướng dẫn viên mới
     public function addHDV($data)
     {
-        $sql = "INSERT INTO guides (
-                    full_name, birth_date, photo, phone, email, 
-                    languages, experience_years, 
-                    health_status, status
+        $sql = "INSERT INTO hdv (
+                    hoTen, ngaySinh, anh, dienThoai, email, 
+                    ngonNgu, kinhNghiem, nhomHDV_id,
+                    sucKhoe, trangThai
                 ) VALUES (
-                    :full_name, :birth_date, :photo, :phone, :email,
-                    :languages, :experience_years,
-                    :health_status, :status
+                    :hoTen, :ngaySinh, :anh, :dienThoai, :email,
+                    :ngonNgu, :kinhNghiem, :nhomHDV_id,
+                    :sucKhoe, :trangThai
                 )";
 
         $stmt = $this->conn->prepare($sql);
 
         return $stmt->execute([
-            'full_name'        => $data['full_name'] ?? '',
-            'birth_date'       => $data['birth_date'] ?? null,
-            'photo'            => $data['photo'] ?? '',
-            'phone'            => $data['phone'] ?? '',
-            'email'            => $data['email'] ?? '',
-            'languages'        => $data['languages'] ?? '',
-            'experience_years' => $data['experience_years'] ?? 0,
-            'health_status'    => $data['health_status'] ?? '',
-            'status'           => $data['status'] ?? 'Đang hoạt động',
+            'hoTen'      => $data['hoTen'] ?? '',
+            'ngaySinh'   => $data['ngaySinh'] ?? null,
+            'anh'        => $data['anh'] ?? '',
+            'dienThoai'  => $data['dienThoai'] ?? '',
+            'email'      => $data['email'] ?? '',
+            'ngonNgu'    => $data['ngonNgu'] ?? '',
+            'kinhNghiem' => $data['kinhNghiem'] ?? 0,
+            'nhomHDV_id' => $data['nhomHDV_id'] ?? null,
+            'sucKhoe'    => $data['sucKhoe'] ?? '',
+            'trangThai'  => $data['trangThai'] ?? 'Đang hoạt động',
         ]);
     }
     
     // Lấy ảnh theo ID để xóa file
     public function getPhotoById($id)
     {
-        $sql = "SELECT photo FROM guides WHERE guide_id = :id";
+        $sql = "SELECT anh FROM hdv WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(['id' => $id]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? $result['photo'] : null;
+        return $result ? $result['anh'] : null;
     }
 
     // Xóa hướng dẫn viên theo ID
     public function deleteHDV($id)
     {
-        $photo = $this->getPhotoById($id);
-        if ($photo) {
-            $photoPath = 'uploads/img_HDV/' . $photo;
-            if (file_exists($photoPath)) {
-                unlink($photoPath);
+        $anh = $this->getPhotoById($id);
+        if ($anh) {
+            $anhPath = 'uploads/img_HDV/' . $anh;
+            if (file_exists($anhPath)) {
+                unlink($anhPath);
             }
         }
-        $sql = "DELETE FROM guides WHERE guide_id = :id";
+        $sql = "DELETE FROM hdv WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute(['id' => $id]);
     }
@@ -84,29 +94,31 @@ class HDVModel
     // Cập nhật thông tin hướng dẫn viên
     public function updateHDV($id, $data)
     {
-        $sql = "UPDATE guides SET 
-                    full_name = :full_name, 
-                    birth_date = :birth_date, 
-                    photo = :photo, 
-                    phone = :phone, 
+        $sql = "UPDATE hdv SET 
+                    hoTen = :hoTen, 
+                    ngaySinh = :ngaySinh, 
+                    anh = :anh, 
+                    dienThoai = :dienThoai, 
                     email = :email, 
-                    languages = :languages, 
-                    experience_years = :experience_years, 
-                    health_status = :health_status, 
-                    status = :status 
-                WHERE guide_id = :id";
+                    ngonNgu = :ngonNgu, 
+                    kinhNghiem = :kinhNghiem, 
+                    nhomHDV_id = :nhomHDV_id,
+                    sucKhoe = :sucKhoe, 
+                    trangThai = :trangThai 
+                WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([
-            'full_name'        => $data['full_name'] ?? '',
-            'birth_date'       => $data['birth_date'] ?? null,
-            'photo'            => $data['photo'] ?? '',
-            'phone'            => $data['phone'] ?? '',
-            'email'            => $data['email'] ?? '',
-            'languages'        => $data['languages'] ?? '',
-            'experience_years' => $data['experience_years'] ?? 0,
-            'health_status'    => $data['health_status'] ?? '',
-            'status'           => $data['status'] ?? 'Đang hoạt động',
-            'id'               => $id,
+            'hoTen'      => $data['hoTen'] ?? '',
+            'ngaySinh'   => $data['ngaySinh'] ?? null,
+            'anh'        => $data['anh'] ?? '',
+            'dienThoai'  => $data['dienThoai'] ?? '',
+            'email'      => $data['email'] ?? '',
+            'ngonNgu'    => $data['ngonNgu'] ?? '',
+            'kinhNghiem' => $data['kinhNghiem'] ?? 0,
+            'nhomHDV_id' => $data['nhomHDV_id'] ?? null,
+            'sucKhoe'    => $data['sucKhoe'] ?? '',
+            'trangThai'  => $data['trangThai'] ?? 'Đang hoạt động',
+            'id'         => $id,
         ]);
     }
 }
