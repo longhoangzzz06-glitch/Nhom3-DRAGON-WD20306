@@ -110,22 +110,32 @@ include './views/chung/dieu-huong.php';
         </div>
       </div>
 
-      <?php
-      $__tours_data = isset($tours) ? $tours : array();
-      ?>
-
-      <?php
-      $__tours_data = isset($tours) ? $tours : array();
-      ?>
+  <?php
+  $__tours_data = isset($tours) ? $tours : array();
+  $__chinh_sach_data = (new TourController())->getAllChinhSach();
+  ?>
 
 <script>
+    // ==================== KHAI BÁO DỮ LIỆU ====================
     const tours = <?php echo json_encode($__tours_data, JSON_UNESCAPED_UNICODE); ?> || [];
-
+    const chinhSach = <?php echo json_encode($__chinh_sach_data, JSON_UNESCAPED_UNICODE); ?> || [];
+    let allChinhSach = [...chinhSach];
     let allTours = [...tours];
     const tableBody = document.getElementById("tour-table");
     const quickSearchInput = document.getElementById("quick-search");
 
-    // Tìm kiếm nhanh
+    // ==================== HELPER FUNCTIONS ====================
+    function htmlEscape(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function xoaTour(id) {
+        return confirm('Bạn có chắc muốn xóa tour này không?');
+    }
+
+    // ==================== TÌM KIẾM NHANH ====================
     quickSearchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase().trim();
         
@@ -135,24 +145,20 @@ include './views/chung/dieu-huong.php';
             const filtered = allTours.filter(t => {
                 const ten = (t.ten || '').toLowerCase();
                 const danhMuc = (t.danh_muc_ten || '').toLowerCase();
-                const match = ten.includes(searchTerm) || danhMuc.includes(searchTerm);
-                return match;
+                return ten.includes(searchTerm) || danhMuc.includes(searchTerm);
             });
-            console.log('Search term:', searchTerm);
-            console.log('Total tours:', allTours.length);
-            console.log('Filtered tours:', filtered.length);
-            console.log('Filtered data:', filtered);
             renderTours(filtered);
         }
     });
 
-    // Tìm kiếm nâng cao
+    // ==================== TÌM KIẾM NÂNG CAO ====================
     function openAdvancedSearch() {
         document.getElementById('advancedSearchModal').classList.add('active');
     }
 
     function closeAdvancedSearch() {
         document.getElementById('advancedSearchModal').classList.remove('active');
+        closeAdvancedSearch();
     }
 
     function performAdvancedSearch(event) {
@@ -170,12 +176,14 @@ include './views/chung/dieu-huong.php';
             const tTrangThai = (t.trangThai || '').toLowerCase();
             const tGia = t.gia !== null && t.gia !== undefined ? parseInt(t.gia) : 0;
 
-        return  (searchTen === '' || tTen.includes(searchTen)) &&
-                (searchDanhMuc === '' || tDanhMuc === searchDanhMuc) &&
-                (searchTrangThai === '' || tTrangThai === searchTrangThai.toLowerCase()) &&
-                (tGia >= searchGiaMin && tGia <= searchGiaMax)
+            return (searchTen === '' || tTen.includes(searchTen)) &&
+                    (searchDanhMuc === '' || tDanhMuc === searchDanhMuc) &&
+                    (searchTrangThai === '' || tTrangThai === searchTrangThai.toLowerCase()) &&
+                    (tGia >= searchGiaMin && tGia <= searchGiaMax);
         });
+        
         renderTours(filtered);
+        closeAdvancedSearch();
     }
 
     function resetSearch() {
@@ -188,12 +196,7 @@ include './views/chung/dieu-huong.php';
         renderTours(allTours);
     }
 
-    function htmlEscape(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
+    // ==================== RENDER BẢNG TOUR ====================
     function renderTours(toursToRender) {
         tableBody.innerHTML = '';
 
@@ -230,10 +233,7 @@ include './views/chung/dieu-huong.php';
     // Render initial list
     renderTours(allTours);
 
-    function xoaTour(id) {
-        return confirm('Bạn có chắc muốn xóa tour này không?');
-    }
-
+    // ==================== MODAL CHI TIẾT TOUR ====================
     function showDetailModal(tourId) {
         const tour = allTours.find(t => t.id === tourId);
         if (!tour) {
@@ -248,10 +248,6 @@ include './views/chung/dieu-huong.php';
                     <col style="width:150px;">
                     <col style="width:auto;">
                 </colgroup>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">ID</td>
-                    <td class="detail-table-value">${tour.id ?? ''}</td>
-                </tr>
                 <tr class="detail-table-row">
                     <td class="detail-table-label">Tên Tour</td>
                     <td class="detail-table-value">${htmlEscape(tour.ten ?? '')}</td>
@@ -271,6 +267,7 @@ include './views/chung/dieu-huong.php';
                 <tr class="detail-table-row">
                     <td class="detail-table-label">Ngày bắt đầu</td>
                     <td class="detail-table-value">${tour.tgBatDau ? new Date(tour.tgBatDau).toLocaleDateString('vi-VN') : ''}</td>
+                </tr>
                 <tr class="detail-table-row">
                     <td class="detail-table-label">Ngày kết thúc</td>
                     <td class="detail-table-value">${tour.tgKetThuc ? new Date(tour.tgKetThuc).toLocaleDateString('vi-VN') : ''}</td>
@@ -280,11 +277,14 @@ include './views/chung/dieu-huong.php';
                     <td class="detail-table-value">${htmlEscape(tour.moTa ?? '')}</td>
                 </tr>
                 <tr class="detail-table-row">
+                    <td class="detail-table-label"><a href="javascript:void(0)" onclick="showChinhSachModal(${tour.chinhSach_id})">Chính sách <i class="fas fa-info-circle"></i></a></td>
+                    <td class="detail-table-value">${htmlEscape(tour.chinh_sach_ten ?? 'Không có')}</td>
+                </tr>
+                <tr class="detail-table-row">
                     <td class="detail-table-label">Trạng thái</td>
                     <td class="detail-table-value"><span class="status-badge ${statusClass}">${tour.trangThai ?? ''}</span></td>
                 </tr>
             </table>
-
             <div class="detail-actions">
                 <a href="index.php?act=view-cap-nhat-tour&id=${tour.id}">
                     <i class="fas fa-pen"></i> Chỉnh sửa
@@ -309,7 +309,64 @@ include './views/chung/dieu-huong.php';
         }
     }
 
-    // Close modal when clicking outside
+    // ==================== MODAL CHỈ TIẾT CHÍNH SÁCH ====================
+    function showChinhSachModal(chinhSachId) {
+        const chinhSach = allChinhSach.find(cs => cs.id === chinhSachId);
+        if (!chinhSach) {
+            alert('Không tìm thấy dữ liệu chính sách');
+            return;
+        }        
+
+        const detailHTML = `
+            <table>
+                <colgroup class="detail-table-colgroup">
+                    <col style="width:150px;">
+                    <col style="width:auto;">
+                </colgroup>
+                <tr class="detail-table-row">
+                    <td class="detail-table-label">Tên chính sách</td>
+                    <td class="detail-table-value">${htmlEscape(chinhSach.ten ?? '')}</td>
+                </tr>
+                <tr class="detail-table-row">
+                    <td class="detail-table-label">Chính sách giá</td>
+                    <td class="detail-table-value">${htmlEscape(chinhSach.gia ?? '')}</td>
+                </tr>
+                <tr class="detail-table-row">
+                    <td class="detail-table-label">Chính sách hoàn - hủy</td>
+                    <td class="detail-table-value">${htmlEscape(chinhSach.hoanHuy ?? '')}</td>
+                </tr>
+                <tr class="detail-table-row">
+                    <td class="detail-table-label">Chính sách đặt cọc - thanh toán</td>
+                    <td class="detail-table-value">${htmlEscape(chinhSach.datCoc_thanhToan ?? '')}</td>
+                </tr>
+                <tr class="detail-table-row">
+                    <td class="detail-table-label">Chính sách cho trẻ em</td>
+                    <td class="detail-table-value">${htmlEscape(chinhSach.treEm ?? '')}</td>
+                </tr>
+                <tr class="detail-table-row">
+                    <td class="detail-table-label">Chính sách bảo hiểm</td>
+                    <td class="detail-table-value">${htmlEscape(chinhSach.baoHiem ?? '')}</td>
+                </tr>
+                <tr class="detail-table-row">
+                    <td class="detail-table-label">Chính sách thay đổi dịch vụ</td>
+                    <td class="detail-table-value">${htmlEscape(chinhSach.thayDoiDichVu ?? '')}</td>
+                </tr>
+                <tr class="detail-table-row">
+                    <td class="detail-table-label">Chính sách bao gồm - không bao gồm</td>
+                    <td class="detail-table-value">${htmlEscape(chinhSach.baoGom_khongBaoGom ?? '')}</td>
+                </tr>
+            </table>
+        `;
+        
+        document.getElementById('chinhSachContent').innerHTML = detailHTML;
+        document.getElementById('chinhSachModal').classList.add('active');
+    }
+
+    function closeChinhSachModal() {
+        document.getElementById('chinhSachModal').classList.remove('active');
+    }
+
+    // ==================== EVENT LISTENERS ====================
     window.onclick = function(event) {
         const modal = document.getElementById('advancedSearchModal');
         if (event.target === modal) {
@@ -326,6 +383,19 @@ include './views/chung/dieu-huong.php';
         <span class="close-modal" onclick="closeDetailModal()">&times;</span>
       </div>
       <div id="detailContent">
+        <!-- Content will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Chính Sách Modal -->
+  <div id="chinhSachModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>Chi tiết Chính sách</h2>
+        <span class="close-modal" onclick="closeChinhSachModal()">&times;</span>
+      </div>
+      <div id="chinhSachContent">
         <!-- Content will be loaded here -->
       </div>
     </div>

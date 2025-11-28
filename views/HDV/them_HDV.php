@@ -106,10 +106,9 @@ include './views/chung/dieu-huong.php';
     </div>
 
     <script>
+        // ==================== FILE INPUT HANDLER ====================
         const photoInput = document.getElementById('anh');
         const photoLabel = document.getElementById('anhLabel');
-        const birthDatePicker = document.getElementById('ngaySinh_picker');
-        const birthDateHidden = document.getElementById('ngaySinh_hidden');
 
         photoInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
@@ -119,11 +118,13 @@ include './views/chung/dieu-huong.php';
             }
         });
 
-        birthDatePicker.addEventListener('change', function() {
-            if (this.value) {
-                const [year, month, day] = this.value.split('-');
-                birthDateHidden.value = `${day}/${month}/${year}`;
-            }
+        // ==================== FORM VALIDATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            
+            form.addEventListener('submit', function(e) {
+                // Basic validation can be added here if needed
+            });
         });
     </script>
 </body>

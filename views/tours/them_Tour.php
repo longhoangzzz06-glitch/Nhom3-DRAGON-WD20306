@@ -100,24 +100,13 @@ include './views/chung/dieu-huong.php';
     </div>
 
     <script>
-        const photoInput = document.getElementById('photo');
-        const photoLabel = document.getElementById('photoLabel');
-        const birthDatePicker = document.getElementById('birth_date_picker');
-        const birthDateHidden = document.getElementById('birth_date_hidden');
-
-        photoInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const fileName = this.files[0].name;
-                photoLabel.innerHTML = `<i class="fas fa-check-circle"></i> ${fileName}`;
-                photoLabel.classList.add('has-file');
-            }
-        });
-
-        birthDatePicker.addEventListener('change', function() {
-            if (this.value) {
-                const [year, month, day] = this.value.split('-');
-                birthDateHidden.value = `${day}/${month}/${year}`;
-            }
+        // ==================== FORM VALIDATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            
+            form.addEventListener('submit', function(e) {
+                // Basic validation can be added here if needed
+            });
         });
     </script>
 </body>

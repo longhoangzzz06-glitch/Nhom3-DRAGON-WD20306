@@ -82,3 +82,16 @@ include './views/chung/dieu-huong.php';
     </div>
 </div>
 </div>
+
+    <script>
+        // ==================== FORM VALIDATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            
+            form.addEventListener('submit', function(e) {
+                // Basic validation can be added here if needed
+            });
+        });
+    </script>
+</body>
+</html>

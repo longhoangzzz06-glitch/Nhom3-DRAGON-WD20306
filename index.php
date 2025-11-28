@@ -48,4 +48,15 @@ match ($act) {
     // Xử lý cập nhật Tours
     'view-cap-nhat-tour'=> (new TourController())->viewCapNhatTour($_GET['id']),
     'cap-nhat-tour'=> (new TourController())->capNhatTour($_GET['id'], $_POST),
+
+    /* Trang quản lý Booking */
+    // Hiển thị danh sách Booking
+    'quan-ly-booking'=> (new BookingController())->danhSachBooking(),
+    // Xử lý xóa Booking
+    'xoa-booking'=> (new BookingController())->xoaBooking($_GET['id']),
+    // Xử lý cập nhật Booking
+    'view-cap-nhat-booking'=> (new BookingController())->viewCapNhatBooking($_GET['id']),
+    'cap-nhat-booking'=> (new BookingController())->capNhatBooking($_GET['id'], $_POST),
+    // Xử lý đặt booking
+    'dat-booking'=> (new BookingController())->datBooking($_POST),
 };

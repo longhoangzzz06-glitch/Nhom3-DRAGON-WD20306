@@ -10,8 +10,9 @@ class TourModel {
     // Lấy dữ liệu tất cả tour (JOIN với danh_muc để lấy tên)
     public function getAllTour() 
     {
-        $sql = "SELECT t.*, dm.ten as danh_muc_ten FROM tour t 
-                LEFT JOIN tour_danh_muc dm ON t.danhMuc_id = dm.id";
+        $sql = "SELECT t.*, dm.ten as danh_muc_ten, cs.ten as chinh_sach_ten FROM tour t 
+                LEFT JOIN tour_danh_muc dm ON t.danhMuc_id = dm.id
+                LEFT JOIN tour_chinh_sach cs ON t.chinhSach_id = cs.id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         $tourList = $stmt->fetchAll(PDO::FETCH_ASSOC);

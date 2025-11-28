@@ -34,6 +34,22 @@
                 </a>
             </li>
 
+            <!-- Quản lý booking -->
+            <li class="nav-item" id="nav-booking">
+                <a href="index.php?act=quan-ly-booking" class="nav-link">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Quản lý Booking</span>
+                </a>
+            </li>
+
+            <!-- Đặt booking -->
+            <li class="nav-item" id="nav-dat-booking">
+                <a href="index.php?act=dat-booking" class="nav-link">
+                    <span class="nav-icon">🛎️</span>
+                    <span class="nav-text">Đặt Booking</span>
+                </a>
+            </li>
+
             <!-- Quản lý Khách hàng
             <li class="nav-item" id="nav-customer">
                 <a href="index.php?act=customer" class="nav-link">
@@ -54,7 +70,15 @@
 
     <!-- Footer -->
     <div class="sidebar-footer">
-        <a href="logout.php" class="sidebar-logout">Đăng xuất</a>
+        <?php
+        // Đăng ký/đăng nhập
+        if (isset($_SESSION['admin'])) {
+            echo '<p>Xin chào, ' . htmlspecialchars($_SESSION['admin']['username']) . '</p>';
+            echo '<a href="index.php?act=logout" class="logout-link sidebar-logout">Đăng xuất</a>';
+        } else {
+            echo '<a href="index.php?act=login" class="login-link sidebar-login">Đăng nhập</a>';
+        }
+        ?>
     </div>
 </aside>
 

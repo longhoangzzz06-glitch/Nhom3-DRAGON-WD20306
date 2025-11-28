@@ -6,9 +6,10 @@ class Booking {
         $this->db = $db;
     }
 
-    public function all() {
+    // Lấy danh sách booking
+    public function getAllDonHang() {
         $sql = "SELECT b.*, t.tour_name, p.package_name
-                FROM bookings b
+                FROM don_hang b
                 JOIN tours t ON b.tour_id = t.id
                 JOIN tour_packages p ON b.package_id = p.id
                 ORDER BY b.id DESC";
@@ -16,15 +17,17 @@ class Booking {
         return $this->db->query($sql)->fetchAll();
     }
 
-    public function find($id) {
-        $sql = "SELECT * FROM bookings WHERE id = ?";
+    // Lấy dữ liệu booking theo ID
+    public function getDonHangById($id) {
+        $sql = "SELECT * FROM don_hang WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
 
-    public function create($data) {
-        $sql = "INSERT INTO bookings (tour_id, package_id, customer_name, phone, email, total_price)
+    // Thêm booking mới
+    public function themDonHang($data) {
+        $sql = "INSERT INTO don_hang (tour_id, package_id, customer_name, phone, email, total_price)
                 VALUES (?, ?, ?, ?, ?, ?)";
 
         $stmt = $this->db->prepare($sql);
@@ -38,11 +41,11 @@ class Booking {
         ]);
     }
 
-    public function update($id, $data) {
-        $sql = "UPDATE bookings
+    // Cập nhật booking theo ID
+    public function capNhatDonHang($id, $data) {
+        $sql = "UPDATE don_hang
                 SET tour_id = ?, package_id = ?, customer_name = ?, phone = ?, email = ?, total_price = ?
                 WHERE id = ?";
-
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             $data['tour_id'],
@@ -55,8 +58,9 @@ class Booking {
         ]);
     }
 
-    public function delete($id) {
-        $stmt = $this->db->prepare("DELETE FROM bookings WHERE id = ?");
+    // Xóa booking theo ID
+    public function xoaDonHang($id) {
+        $stmt = $this->db->prepare("DELETE FROM don_hang WHERE id = ?");
         return $stmt->execute([$id]);
     }
 }
