@@ -67,8 +67,8 @@
             <div class="form-group">
                 <label for="trangThai">Trạng thái:</label>
                 <select id="trangThai" name="trangThai">
-                    <option value="Chờ duyệt" <?php echo ($donHang['trangThai'] == 'Chờ duyệt') ? 'selected' : ''; ?>>Chờ duyệt</option>
-                    <option value="Đã duyệt" <?php echo ($donHang['trangThai'] == 'Đã duyệt') ? 'selected' : ''; ?>>Đã duyệt</option>
+                    <option value="Chờ xác nhận" <?php echo ($donHang['trangThai'] == 'Chờ xác nhận') ? 'selected' : ''; ?>>Chờ xác nhận</option>
+                    <option value="Đã cọc" <?php echo ($donHang['trangThai'] == 'Đã cọc') ? 'selected' : ''; ?>>Đã Cọc</option>
                     <option value="Đã hoàn thành" <?php echo ($donHang['trangThai'] == 'Đã hoàn thành') ? 'selected' : ''; ?>>Đã hoàn thành</option>
                     <option value="Đã hủy" <?php echo ($donHang['trangThai'] == 'Đã hủy') ? 'selected' : ''; ?>>Đã hủy</option>
                 </select>

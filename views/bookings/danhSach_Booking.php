@@ -11,8 +11,6 @@
             background-color: #f8f9fa;
             padding: 10px;
             border-radius: 4px;
-            max-height: 200px;
-            overflow-y: auto;
         }
         .customers-list ul {
             margin: 0;
@@ -43,6 +41,24 @@
         .badge-cancelled {
             background-color: #dc3545;
             color: #fff;
+        }
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+        .modal-body table thead {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        .modal-body table th,
+        .modal-body table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .modal-body table tbody tr:hover {
+            background-color: #f9f9f9;
         }
     </style>
 </head>
@@ -118,7 +134,7 @@
               <select id="search-status">
                 <option value="">-- Tất cả --</option>
                 <option value="Chưa xác nhận">Chưa xác nhận</option>
-                <option value="Đã xác nhận">Đã xác nhận</option>
+                <option value="Đã xác nhận">Đã cọc</option>
                 <option value="Hoàn thành">Hoàn thành</option>
                 <option value="Hủy">Hủy</option>
               </select>
@@ -288,7 +304,7 @@
     function showDetailModal(bookingId) {
         const booking = allBookings.find(b => b.id === bookingId);
         if (!booking) {
-            alert('Không tìm thấy dữ liệu đơn hàng');
+            alert('Không tìm thấy dữ liệu khách hàng');
             return;
         }
 
@@ -354,37 +370,62 @@
 
     // ==================== MODAL DANH SÁCH KHÁCH HÀNG ====================
     function showCustomersList(bookingId) {
-        const booking = allBookings.find(b => b.id === bookingId);
-        if (!booking) {
-            alert('Không tìm thấy dữ liệu đơn hàng');
-            return;
-        }
+        fetch('index.php?act=api-get-customers&booking_id=' + bookingId)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error, status = ' + response.status);
+                }
+                return response.text();
+            })
+            .then(text => {
+                try {
+                    const data = JSON.parse(text);
+                    if (!data.success || !data.data) {
+                        alert('Không thể lấy danh sách khách hàng: ' + (data.message || 'Dữ liệu không hợp lệ'));
+                        return;
+                    }
 
-        // Split customers if multiple (separated by comma)
-        const customers = booking.khach_hang_ten 
-            ? booking.khach_hang_ten.split(', ').map(c => c.trim()) 
-            : [];
+                    const customers = data.data || [];
+                    let html = `
+                        <table>
+                            <colgroup>
+                                <col style="width:150px;">
+                                <col style="width:auto;">
+                            </colgroup>
+                    `;
 
-        const customersList = customers.length > 0 
-            ? customers.map(c => `<li><strong>${htmlEscape(c)}</strong></li>`).join('')
-            : '<li><em>Chưa có khách hàng nào</em></li>';
+                    if (customers.length === 0) {
+                        html += `<tr><td colspan="2"><em>Chưa có khách hàng nào</em></td></tr>`;
+                    } else {
+                        customers.forEach(c => {
+                            html += `
+                                <tr>
+                                    <td>${c.id}</td>
+                                    <td>${htmlEscape(c.ten)}</td>
+                                    <td>${htmlEscape(c.gioiTinh)}</td>
+                                    <td>${c.tuoi || 'N/A'}</td>
+                                    <td>${htmlEscape(c.dienThoai || 'N/A')}</td>
+                                    <td>${htmlEscape(c.email || 'N/A')}</td>
+                                    <td>${c.trangThai_checkin == 1 ? '<span style="color: green; font-weight: 600;">Đã check-in</span>' : '<span style="color: red; font-weight: 600;">Chưa check-in</span>'}</td>
+                                </tr>
+                            `;
+                        });
+                    }
 
-        const customersHTML = `
-            <div class="detail-table-label">Danh sách khách hàng trong đơn #${booking.id}:</div>
-            <div class="customers-list">
-                <ul>
-                    ${customersList}
-                </ul>
-            </div>
-            <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
-                <em>Tổng số khách hàng: ${customers.length}</em>
-            </p>
-        `;
-
-        document.getElementById('customersContent').innerHTML = customersHTML;
-        document.getElementById('customersModal').classList.add('active');
+                    html += `</table>`;
+                    document.getElementById('customersContent').innerHTML = html;
+                    document.getElementById('customersModal').classList.add('active');
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    console.error('Response text:', text);
+                    alert('Lỗi: Không thể xử lý dữ liệu từ server');
+                }
+            })
+            .catch(err => {
+                console.error('Fetch error:', err);
+                alert('Lỗi khi lấy danh sách khách hàng: ' + err.message);
+            });
     }
-
     function closeCustomersModal() {
         document.getElementById('customersModal').classList.remove('active');
     }
@@ -399,18 +440,24 @@
 
         // Fetch customer list chi tiết từ server
         fetch('index.php?act=api-get-customers&booking_id=' + bookingId)
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP error, status = ' + response.status);
+            }
+            return response.text();
+        })
         .then(text => {
             try {
                 const result = JSON.parse(text);
                 if (result.success && result.data) {
                     renderCheckInModal(bookingId, booking, result.data);
                 } else {
-                    alert('Lỗi: Không thể lấy danh sách khách hàng');
+                    alert('Lỗi: ' + (result.message || 'Không thể lấy danh sách khách hàng'));
                 }
             } catch (e) {
                 console.error('Parse error:', e);
-                alert('Lỗi khi xử lý danh sách khách hàng');
+                console.error('Response was:', text);
+                alert('Lỗi khi xử lý danh sách khách hàng: ' + e.message);
             }
         })
         .catch(error => {
@@ -563,13 +610,27 @@
 
   <!-- Customers List Modal -->
   <div id="customersModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-content" style="max-width: 900px;">
       <div class="modal-header">
         <h2>Danh sách Khách Hàng</h2>
         <span class="close-modal" onclick="closeCustomersModal()">&times;</span>
       </div>
-      <div id="customersContent" style="padding: 20px;">
-        <!-- Content will be loaded here -->
+      <div class="modal-body" style="padding: 20px;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên khách hàng</th>
+                    <th>Giới tính</th>
+                    <th>Tuổi</th>
+                    <th>Số điện thoại</th>
+                    <th>Email</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody id="customersContent">
+            </tbody>            
+        </table>
       </div>
     </div>
   </div>

@@ -73,6 +73,26 @@ class Booking {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Lấy danh sách khách hàng theo ID booking
+    public function getKhachHangById($donHangId)
+    {
+        $sql = "SELECT 
+                    kh.id,
+                    kh.ten,
+                    kh.tuoi,
+                    kh.gioiTinh,
+                    kh.dienThoai,
+                    kh.email,
+                    dkh.trangThai_checkin
+                FROM don_hang_khach_hang dkh
+                JOIN khach_hang kh ON dkh.khachHang_id = kh.id
+                WHERE dkh.donHang_id = :donHang_id
+                ORDER BY kh.id ASC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['donHang_id' => $donHangId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Thêm booking mới
     public function themDonHang($data) 
     {

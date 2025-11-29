@@ -381,6 +381,7 @@
                             <span class="info-label">Ngày kết thúc:</span>
                             <span class="info-value" id="display-ketthuc">-</span>
                         </div>
+                        
                     </div>
                 </div>
 
