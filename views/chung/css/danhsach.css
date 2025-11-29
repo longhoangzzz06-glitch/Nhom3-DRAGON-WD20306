@@ -1,5 +1,6 @@
+/* Danh sách chung cho HDV và Tour */
+
 body {
-    font-family: system-ui, sans-serif;
     background: white;
     color: #111;
 }
@@ -18,7 +19,7 @@ p {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 24px;
+    margin: 24px 0;
     gap: 24px;
 }
 
@@ -51,7 +52,7 @@ button:hover {
 /* Main Wrapper - Fixed width container */
 .main-wrapper {
     width: 100%;
-    max-width: 1200px;
+    max-width: 2000px;
     margin: 0 auto;
     background: white;
     border-radius: 12px;
@@ -112,7 +113,7 @@ th, td {
     text-align: left;
     padding: 12px 10px;
     border-bottom: 1px solid #e5e7eb;
-    min-width: 20px;
+    min-width: 160px;
 }
 
 th {
@@ -124,7 +125,7 @@ th {
     z-index: 10;
     border-bottom: 2px solid #e5e7eb;
     white-space: nowrap;
-    padding: 10px 10px;
+    padding: 18px 10px;
 }
 
 tbody tr {
@@ -144,79 +145,6 @@ td {
     font-size: 14px;
 }
 
-/* ID column */
-th:nth-child(1),
-td:nth-child(1) {
-    min-width: 45px;
-}
-
-/* Tour name column */
-th:nth-child(2),
-td:nth-child(2) {
-    min-width: 130px;
-}
-
-/* Category column */
-th:nth-child(3),
-td:nth-child(3) {
-    min-width: 100px;
-}
-
-/* Description column */
-th:nth-child(4),
-td:nth-child(4) {
-    min-width: 150px;
-}
-
-/* Policy column */
-th:nth-child(5),
-td:nth-child(5) {
-    min-width: 120px;
-}
-
-/* Provider column */
-th:nth-child(6),
-td:nth-child(6) {
-    min-width: 100px;
-}
-
-/* Status column */
-th:nth-child(7),
-td:nth-child(7) {
-    min-width: 100px;
-}
-
-/* Date column */
-th:nth-child(8),
-td:nth-child(8) {
-    min-width: 100px;
-}
-
-/* Actions column */
-th:nth-child(9),
-td:nth-child(9) {
-    min-width: 90px;
-    text-align: center;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.status-active {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.status-inactive {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
 .rating {
     background: rgba(37, 99, 235, 0.15);
     color: #2563eb;
@@ -231,7 +159,7 @@ td:nth-child(9) {
     justify-content: left;
     align-items: center;
     gap: 12px;
-    padding: 22px 0px;
+    padding: 22px 0;
 }
 
 .actions a {
@@ -333,7 +261,7 @@ td:nth-child(9) {
     background: #6b7280;
 }
 
-.btn-add-tour {
+.btn-add-item {
     background: #10b981;
     padding: 10px 16px;
     height: fit-content;
@@ -341,7 +269,7 @@ td:nth-child(9) {
     margin-left: auto;
 }
 
-.btn-add-tour:hover {
+.btn-add-item:hover {
     background: #059669;
 }
 
@@ -456,6 +384,25 @@ td:nth-child(9) {
 
 .btn-search-cancel:hover {
     background: #6b7280;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-inactive {
+    background: #fee2e2;
+    color: #7f1d1d;
 }
 
 /* Detail modal styling */
@@ -573,4 +520,63 @@ td:nth-child(9) {
 
 .detail-actions button:hover {
     opacity: 0.9;
+}
+
+th:nth-child(1), td:nth-child(1) {
+    width: 50px;
+    min-width: 50px;
+}
+
+/* Support for Booking table with 9 columns */
+th:nth-child(2), td:nth-child(2) {
+    width: 120px;
+    min-width: 120px;
+}
+
+th:nth-child(3), td:nth-child(3) {
+    width: 130px;
+    min-width: 130px;
+}
+
+th:nth-child(4), td:nth-child(4) {
+    width: 140px;
+    min-width: 140px;
+}
+
+th:nth-child(5), td:nth-child(5) {
+    width: 110px;
+    min-width: 110px;
+}
+
+th:nth-child(6), td:nth-child(6) {
+    width: 110px;
+    min-width: 110px;
+}
+
+th:nth-child(7), td:nth-child(7) {
+    width: 110px;
+    min-width: 110px;
+}
+
+th:nth-child(8), td:nth-child(8) {
+    width: 120px;
+    min-width: 120px;
+}
+
+th:nth-child(9), td:nth-child(9) {
+    width: 140px;
+    min-width: 140px;
+    text-align: center;
+}
+
+/* Link styling for customer lists */
+.link-customers {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    transition: text-decoration 0.2s;
+}
+
+.link-customers:hover {
+    text-decoration: underline;
 }

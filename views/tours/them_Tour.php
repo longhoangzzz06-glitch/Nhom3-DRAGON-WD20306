@@ -1,10 +1,3 @@
-<?php
-// Định nghĩa module hiện tại
-$currentModule = 'tour';
-
-// Include dieu-huong
-include './views/chung/dieu-huong.php';
-?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,7 +5,7 @@ include './views/chung/dieu-huong.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thêm Tour</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="./views/tours/css/them_Tour.css" />
+    <link rel="stylesheet" href="./views/chung/css/form.css" />
 </head>
 <body>
     <div class="content-wrapper">
@@ -100,24 +93,13 @@ include './views/chung/dieu-huong.php';
     </div>
 
     <script>
-        const photoInput = document.getElementById('photo');
-        const photoLabel = document.getElementById('photoLabel');
-        const birthDatePicker = document.getElementById('birth_date_picker');
-        const birthDateHidden = document.getElementById('birth_date_hidden');
-
-        photoInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const fileName = this.files[0].name;
-                photoLabel.innerHTML = `<i class="fas fa-check-circle"></i> ${fileName}`;
-                photoLabel.classList.add('has-file');
-            }
-        });
-
-        birthDatePicker.addEventListener('change', function() {
-            if (this.value) {
-                const [year, month, day] = this.value.split('-');
-                birthDateHidden.value = `${day}/${month}/${year}`;
-            }
+        // ==================== FORM VALIDATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            
+            form.addEventListener('submit', function(e) {
+                // Basic validation can be added here if needed
+            });
         });
     </script>
 </body>

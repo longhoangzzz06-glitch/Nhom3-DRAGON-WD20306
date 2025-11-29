@@ -1,3 +1,4 @@
+/* Form chung cho Thêm và Cập nhật */
 
 body {
     font-family: system-ui, sans-serif;
@@ -6,6 +7,7 @@ body {
     padding: 0;
     margin: 0;
 }
+
 .container {
     max-width: 2000px;
     margin: 0 auto;
@@ -14,19 +16,23 @@ body {
     border-radius: 0;
     box-shadow: none;
 }
+
 h1 {
     font-size: 28px;
     margin: 0 0 30px 0;
 }
+
 .form-group {
     margin-bottom: 20px;
 }
+
 label {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
     color: #333;
 }
+
 input, textarea, select {
     width: 100%;
     padding: 10px;
@@ -35,20 +41,32 @@ input, textarea, select {
     font-size: 14px;
     box-sizing: border-box;
 }
+
 input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: #2563eb;
     box-shadow: 0 0 5px rgba(37, 99, 235, 0.3);
 }
+
 textarea {
     resize: vertical;
     min-height: 100px;
 }
+
+.photo-preview {
+    margin: 5px 0;
+    max-width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
 .button-group {
     display: flex;
     gap: 10px;
     margin-top: 30px;
 }
+
 button {
     flex: 1;
     padding: 12px;
@@ -58,29 +76,36 @@ button {
     cursor: pointer;
     transition: background-color 0.3s;
 }
+
 .btn-submit {
     background: #2563eb;
     color: white;
 }
+
 .btn-submit:hover {
     background: #1d4ed8;
 }
+
 .btn-cancel {
     background: #e5e7eb;
     color: #333;
 }
+
 .btn-cancel:hover {
     background: #d1d5db;
 }
+
 .file-input-wrapper {
     position: relative;
     display: inline-block;
     width: 100%;
 }
-#photo {
+
+.file-input-wrapper input[type="file"] {
     position: absolute;
     left: -9999px;
 }
+
 .file-input-label {
     display: block;
     padding: 10px;
@@ -90,9 +115,11 @@ button {
     cursor: pointer;
     transition: border-color 0.3s;
 }
+
 .file-input-label:hover {
     border-color: #2563eb;
 }
+
 .file-input-label.has-file {
     background: #f0f9ff;
     border-color: #2563eb;

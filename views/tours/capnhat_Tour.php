@@ -1,10 +1,3 @@
-<?php
-// Định nghĩa module hiện tại
-$currentModule = 'tour';
-
-// Include dieu-huong
-include './views/chung/dieu-huong.php';
-?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,7 +5,7 @@ include './views/chung/dieu-huong.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sửa Tour</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="./views/tours/css/capNhat_Tour.css" />
+    <link rel="stylesheet" href="./views/chung/css/form.css" />
 </head>
 <body>
     <div class="content-wrapper">
@@ -82,3 +75,16 @@ include './views/chung/dieu-huong.php';
     </div>
 </div>
 </div>
+
+    <script>
+        // ==================== FORM VALIDATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            
+            form.addEventListener('submit', function(e) {
+                // Basic validation can be added here if needed
+            });
+        });
+    </script>
+</body>
+</html>

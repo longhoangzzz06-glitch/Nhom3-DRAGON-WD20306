@@ -1,10 +1,3 @@
-<?php
-// Định nghĩa module hiện tại
-$currentModule = 'hdv';
-
-// Include sidedieu-huongbar
-include './views/chung/dieu-huong.php';
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +5,7 @@ include './views/chung/dieu-huong.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="./views/HDV/css/capnhat_HDV.css" />
+    <link rel="stylesheet" href="./views/chung/css/form.css" />
 </head>
 <body>
   <div class="content-wrapper">    
@@ -44,7 +37,7 @@ include './views/chung/dieu-huong.php';
 
         <div class="form-group">
             <label for="ngaySinh">Ngày Sinh: <span style="color: red;">*</span></label>
-            <input type="date" id="ngaySinh" name="ngaySinh" value="<?php echo $hdv['ngaySinh']; ?>" required>
+            <input type="date" id="ngaySinh" name="ngaySinh" value="<?php echo htmlspecialchars($hdv['ngaySinh']); ?>" required>
         </div>
 
         <div class="form-group">
@@ -105,6 +98,17 @@ include './views/chung/dieu-huong.php';
             <button type="button" class="btn-cancel" onclick="window.location.href='index.php?act=quan-ly-hdv'">Hủy</button>
         </div>
     </form>
-</div>    
+</div>
+
+    <script>
+        // ==================== FORM VALIDATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            
+            form.addEventListener('submit', function(e) {
+                // Basic validation can be added here if needed
+            });
+        });
+    </script>
 </body>
 </html>
