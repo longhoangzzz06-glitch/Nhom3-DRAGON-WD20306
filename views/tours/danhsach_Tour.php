@@ -1,10 +1,3 @@
-<?php
-// Định nghĩa module hiện tại
-$currentModule = 'tour';
-
-// Include sidedieu-huongbar
-include './views/chung/dieu-huong.php';
-?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,7 +5,7 @@ include './views/chung/dieu-huong.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Tour</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="./views/tours/css/danhsach_Tour.css" />
+    <link rel="stylesheet" href="./views/chung/css/danhsach.css" />
 </head>
 <body>
   <div class="content-wrapper">
@@ -35,7 +28,7 @@ include './views/chung/dieu-huong.php';
         <button class="btn-reset" onclick="resetSearch()">
           <i class="fas fa-redo"></i> Đặt lại
         </button>
-        <button class="btn-add-tour">
+        <button class="btn-add-item">
           <a href="index.php?act=view-them-tour" style="color: white; text-decoration: none;">
             <i class="fas fa-plus"></i> Thêm tour
           </a>

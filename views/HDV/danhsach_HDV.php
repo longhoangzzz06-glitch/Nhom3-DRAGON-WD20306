@@ -1,10 +1,3 @@
-<?php
-// Định nghĩa module hiện tại
-$currentModule = 'hdv';
-
-// Include dieu-huong
-include './views/chung/dieu-huong.php';
-?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,7 +5,7 @@ include './views/chung/dieu-huong.php';
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quản lý Hướng dẫn viên</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="./views/HDV/css/danhsach_HDV.css" />
+  <link rel="stylesheet" href="./views/chung/css/danhsach.css"/>
 </head>
 <body>
   <div class="content-wrapper">
@@ -35,7 +28,7 @@ include './views/chung/dieu-huong.php';
         <button class="btn-reset" onclick="resetSearch()">
           <i class="fas fa-redo"></i> Đặt lại
         </button>
-        <button class="btn-add-guide">
+        <button class="btn-add-item">
         <a href="index.php?act=view-them-hdv" style="color: white; text-decoration: none;">
             <i class="fas fa-plus"></i> Thêm hướng dẫn viên 
         </a>
