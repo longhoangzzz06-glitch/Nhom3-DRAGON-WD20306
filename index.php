@@ -1,6 +1,55 @@
 <?php
 session_start();
 ob_start();
+
+// Require file Common
+require_once './commons/env.php';
+require_once './commons/function.php';
+
+// Require toàn bộ file Controllers
+require_once './controllers/HDVController.php';
+require_once './controllers/TourController.php';
+require_once './controllers/BookingController.php';
+require_once './controllers/ReportController.php';
+require_once './controllers/TourDetailController.php';
+
+// Require toàn bộ file Models
+require_once './models/HDVModel.php';
+require_once './models/TourModel.php';
+require_once './models/BookingModel.php';
+require_once './models/ReportModel.php';
+require_once './models/CheckpointModel.php';
+require_once './models/RequirementModel.php';
+require_once './models/ReviewModel.php';
+require_once './models/TourDetailModel.php';
+
+// Check if this is an API request (handle before HTML output)
+$act = $_GET['act'] ?? '/';
+$apiRoutes = [
+    'api-save-checkin',
+    'api-complete-checkpoint',
+    'api-save-requirement',
+    'api-delete-requirement',
+    'api-get-requirements-by-customer',
+    'api-save-diary',
+    'api-delete-diary',
+    'api-save-review'
+];
+
+if (in_array($act, $apiRoutes)) {
+    // Handle API routes without HTML wrapper
+    match ($act) {
+        'api-save-checkin' => (new HDVController())->saveCheckin(),
+        'api-complete-checkpoint' => (new HDVController())->completeCheckpoint(),
+        'api-save-requirement' => (new HDVController())->saveRequirement(),
+        'api-delete-requirement' => (new HDVController())->deleteRequirement(),
+        'api-get-requirements-by-customer' => (new HDVController())->getRequirementsByCustomer(),
+        'api-save-diary' => (new HDVController())->saveDiary(),
+        'api-delete-diary' => (new HDVController())->deleteDiary(),
+        'api-save-review' => (new HDVController())->saveReview(),
+    };
+    exit(); // Stop execution after API response
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -278,6 +327,20 @@ ob_start();
                       <i class="nav-icon bi bi-calendar-check"></i>
                       <p class="nav-text">Quản lý Booking</p>
                   </a>
+              </li>
+              <!-- Báo cáo vận hành -->
+              <li class="nav-item" id="nav-report">
+                  <a href="index.php?act=bao-cao-van-hanh" class="nav-link">
+                      <i class="nav-icon bi bi-graph-up"></i>
+                      <p class="nav-text">Báo cáo Vận hành</p>
+                  </a>
+              </li>
+              <!-- HDV - Lịch làm việc -->
+              <li class="nav-item" id="nav-hdv">
+                  <a href="index.php?act=hdv-lich-lam-viec" class="nav-link">
+                      <i class="nav-icon bi bi-calendar3"></i>
+                      <p class="nav-text">Lịch làm việc HDV</p>
+                  </a>
               </li>            
             </ul>
             <!--end::Sidebar Menu-->
@@ -289,27 +352,8 @@ ob_start();
       <!--begin::App Main-->
       <main class="app-main" style="margin: 0 20px">
         <?php 
-        // Require toàn bộ các file khai báo môi trường, thực thi,...(không require view)
-
-        // Require file Common
-        require_once './commons/env.php'; // Khai báo biến môi trường
-        require_once './commons/function.php'; // Hàm hỗ trợ
-
-        // Require toàn bộ file Controllers
-        require_once './controllers/HDVController.php';
-        require_once './controllers/TourController.php';
-        require_once './controllers/BookingController.php';
-
-        // Require toàn bộ file Models
-        require_once './models/HDVModel.php';
-        require_once './models/TourModel.php';
-        require_once './models/BookingModel.php';
-
-        // Route
-        $act = $_GET['act'] ?? '/';
-
-        // Để bảo bảo tính chất chỉ gọi 1 hàm Controller để xử lý request thì mình sử dụng match
-
+        // Route (already defined at top, API routes handled separately)
+        // Non-API routes render with HTML wrapper
         match ($act) {
             // Trang chủ
             '/', 'trang-chu' => (new HDVController())->danhSach(),
@@ -357,6 +401,26 @@ ob_start();
             'api-add-customer'=> (new BookingController())->apiAddCustomer(),
             'api-add-customer-link'=> (new BookingController())->apiAddCustomerLink(),
             'api-delete-customer'=> (new BookingController())->apiDeleteCustomer(),
+
+            /* Trang Báo cáo Vận hành */
+            // Hiển thị báo cáo
+            'bao-cao-van-hanh'=> (new ReportController())->index(),
+            // Xuất báo cáo Excel
+            'bao-cao-export'=> (new ReportController())->export(),
+
+            /* Trang HDV */
+            // Lịch làm việc của HDV - Controller
+            'hdv-lich-lam-viec'=> (new HDVController())->lichLamViec($_SESSION['hdv_id'] ?? 5),
+            // Chi tiết tour (lịch trình + danh sách khách) - TourDetailController
+            'hdv-chi-tiet-tour'=> (new TourDetailController())->chiTietTour($_GET['id'] ?? 0),
+            // Nhật ký tour - TourDetailController
+            'hdv-nhat-ky-tour'=> (new TourDetailController())->nhatKyTour($_GET['id'] ?? 0),
+            // Điểm danh khách hàng - Controller
+            'hdv-diem-danh'=> (new HDVController())->diemDanhKhach($_GET['id'] ?? 0),
+            // Quản lý yêu cầu đặc biệt của khách - Controller
+            'hdv-yeu-cau-dac-biet'=> (new HDVController())->yeuCauDacBiet($_GET['id'] ?? 0),
+            // Đánh giá & phản hồi tour - Controller
+            'hdv-danh-gia-tour'=> (new HDVController())->danhGiaTour($_GET['id'] ?? 0),
         };
         ?>
       </main>
@@ -429,6 +493,9 @@ ob_start();
           'cap-nhat-booking': 'nav-booking',
           'view-dat-booking': 'nav-booking',
           'dat-booking': 'nav-booking',
+          
+          'bao-cao-van-hanh': 'nav-report',
+          'bao-cao-export': 'nav-report',
         };
         
         // Lấy menu ID tương ứng

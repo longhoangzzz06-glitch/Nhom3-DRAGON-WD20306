@@ -2,10 +2,18 @@
 class HDVController
 {
     public $modelHDV;
+    public $modelCheckpoint;
+    public $modelRequirement;
+    public $modelReview;
+    public $modelTourDetail;
 
     public function __construct()
     {
-        $this -> modelHDV = new HDVModel();
+        $this->modelHDV = new HDVModel();
+        $this->modelCheckpoint = new CheckpointModel();
+        $this->modelRequirement = new RequirementModel();
+        $this->modelReview = new ReviewModel();
+        $this->modelTourDetail = new TourDetailModel();
     }
 
     // function xử lý trang hiển thị danh sách HDV
@@ -261,5 +269,398 @@ class HDVController
             </script>";
             exit();
         }
+    }
+
+    // ===================================================================
+    // HDV FEATURE METHODS - NEW
+    // ===================================================================
+
+    // Method 1: Hiển thị trang điểm danh khách hàng
+    public function diemDanhKhach($tourId)
+    {
+        try {
+            // Lấy thông tin tour
+            $tour = $this->modelTourDetail->getTourInfo($tourId);
+            $tour_id = $tourId;
+            
+            // Lấy danh sách checkpoint
+            $rawCheckpoints = $this->modelCheckpoint->getCheckpointsByTour($tourId);
+            
+            // Format checkpoints for view
+            $checkpoints = [];
+            foreach ($rawCheckpoints as $cp) {
+                $checkpoints[] = [
+                    'id' => $cp['id'],
+                    'name' => $cp['ten'],
+                    'time' => date('H:i', strtotime($cp['tgDi'])),
+                    'location' => $cp['ten'],
+                    'status' => $cp['trangThai'] ?? 'pending'
+                ];
+            }
+            
+            // Set active checkpoint (first pending or first one)
+            $activeCheckpoint = !empty($checkpoints) ? $checkpoints[0] : ['name' => 'N/A', 'time' => 'N/A', 'location' => 'N/A'];
+            
+            // Lấy danh sách khách hàng với trạng thái điểm danh
+            $rawCustomers = $this->modelCheckpoint->getCustomersByTourWithCheckin($tourId);
+            
+            // Format customers for view
+            $customers = [];
+            foreach ($rawCustomers as $c) {
+                $customers[] = [
+                    'id' => $c['donHangKhachHang_id'],
+                    'ten' => $c['khachHang_ten'],
+                    'tuoi' => $c['tuoi'],
+                    'gioiTinh' => $c['gioiTinh'],
+                    'dienThoai' => $c['dienThoai'],
+                    'ghiChu' => $c['ghiChuDB'] ?? '',
+                    'checkin_status' => $c['trangThai_checkin'] ?? 'pending'
+                ];
+            }
+            
+            // Lấy yêu cầu đặc biệt (cảnh báo)
+            $specialRequirements = $this->modelCheckpoint->getSpecialRequirements($tourId);
+            
+            // Include view
+            include './views/HDV/diem_danh_khach.php';
+        } catch (Exception $e) {
+            echo "<script>alert('Lỗi: " . addslashes($e->getMessage()) . "'); window.history.back();</script>";
+            exit();
+        }
+    }
+
+    // Method 2: Lưu trạng thái điểm danh (AJAX API)
+    public function saveCheckin()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            $required = ['donHangKhachHangId', 'checkpointId', 'hdvId'];
+            foreach ($required as $field) {
+                if (!isset($data[$field])) {
+                    echo json_encode(['success' => false, 'message' => "Missing field: $field"]);
+                    exit();
+                }
+            }
+            
+            // Allow null status for undo
+            $status = $data['status'] ?? null;
+            
+            $result = $this->modelCheckpoint->saveCheckin(
+                $data['donHangKhachHangId'],
+                $data['checkpointId'],
+                $status,
+                $data['hdvId']
+            );
+            
+            if ($result) {
+                // Lấy thống kê mới sau khi cập nhật
+                $stats = $this->modelCheckpoint->getCheckinStats($data['tourId'] ?? 0, $data['checkpointId']);
+                echo json_encode(['success' => true, 'stats' => $stats]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to save checkin']);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit();
+    }
+
+    // Method 3: Hiển thị trang yêu cầu đặc biệt
+    public function yeuCauDacBiet($tourId)
+    {
+        try {
+            // Lấy thông tin tour
+            $tour = $this->modelTourDetail->getTourInfo($tourId);
+            $tour_id = $tourId;
+            
+            // Lấy tất cả yêu cầu theo tour
+            $allRequirements = $this->modelRequirement->getRequirementsByTour($tourId);
+            
+            // Group by customer
+            $customersMap = [];
+            foreach ($allRequirements as $req) {
+                $custId = $req['khachHang_id'];
+                if (!isset($customersMap[$custId])) {
+                    $customersMap[$custId] = [
+                        'id' => $custId,
+                        'ten' => $req['khachHang_ten'],
+                        'tuoi' => $req['tuoi'],
+                        'gioiTinh' => $req['gioiTinh'],
+                        'dienThoai' => $req['dienThoai'],
+                        'requirements' => []
+                    ];
+                }
+                $customersMap[$custId]['requirements'][] = [
+                    'id' => $req['id'],
+                    'category' => $req['loaiYeuCau'],
+                    'text' => $req['noiDung'],
+                    'priority' => $req['doUuTien'],
+                    'note' => $req['ghiChu'] ?? ''
+                ];
+            }
+            $customers = array_values($customersMap);
+            
+            // Lấy thống kê
+            $stats = $this->modelRequirement->getRequirementStats($tourId);
+            
+            // Include view
+            include './views/HDV/yeu_cau_dac_biet.php';
+        } catch (Exception $e) {
+            echo "<script>alert('Lỗi: " . addslashes($e->getMessage()) . "'); window.history.back();</script>";
+            exit();
+        }
+    }
+
+    // Method 4: Lưu yêu cầu đặc biệt (AJAX API)
+    public function saveRequirement()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            if (isset($data['id']) && $data['id'] > 0) {
+                // Update
+                $result = $this->modelRequirement->updateRequirement($data['id'], $data);
+            } else {
+                // Insert
+                $result = $this->modelRequirement->addRequirement($data);
+            }
+            
+            if ($result) {
+                echo json_encode(['success' => true, 'message' => 'Đã lưu yêu cầu']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Lưu thất bại']);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit();
+    }
+
+    // Method 6: Lưu nhật ký tour (AJAX API)
+    public function saveDiary()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            // Handle file upload if exists
+            if (isset($_FILES['photos']) && $_FILES['photos']['error'][0] === UPLOAD_ERR_OK) {
+                $uploadedPhotos = $this->uploadMultiplePhotos($_FILES['photos'], 'uploads/tour_diary/');
+                $data['anhMinhHoa'] = implode(',', $uploadedPhotos);
+            }
+            
+            if (isset($data['id']) && $data['id'] > 0) {
+                // Update
+                $result = $this->modelReview->updateDiary($data['id'], $data);
+                echo json_encode(['success' => $result, 'message' => $result ? 'Đã cập nhật' : 'Cập nhật thất bại']);
+            } else {
+                // Insert
+                $result = $this->modelReview->addDiary($data);
+                echo json_encode(['success' => $result, 'message' => $result ? 'Đã thêm nhật ký' : 'Thêm thất bại']);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit();
+    }
+
+    // Method 7: Hiển thị trang đánh giá tour
+    public function danhGiaTour($tourId)
+    {
+        try {
+            // Lấy thông tin tour
+            $tour = $this->modelTourDetail->getTourInfo($tourId);
+            $tour_id = $tourId;
+            
+            // Lấy danh sách đánh giá trước đó (nếu có)
+            $previousReviews = $this->modelReview->getReviewsByTour($tourId, 'hdv');
+            
+            // Include view
+            include './views/HDV/danh_gia_tour.php';
+        } catch (Exception $e) {
+            echo "<script>alert('Lỗi: " . addslashes($e->getMessage()) . "'); window.history.back();</script>";
+            exit();
+        }
+    }
+
+    // Method 8: Lưu đánh giá tour (AJAX API)
+    public function saveReview()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            // Handle file upload if exists
+            if (isset($_FILES['photos']) && $_FILES['photos']['error'][0] === UPLOAD_ERR_OK) {
+                $uploadedPhotos = $this->uploadMultiplePhotos($_FILES['photos'], 'uploads/reviews/');
+                $data['anhMinhHoa'] = implode(',', $uploadedPhotos);
+            }
+            
+            // Lưu đánh giá chính
+            if (isset($data['id']) && $data['id'] > 0) {
+                // Update
+                $result = $this->modelReview->updateReview($data['id'], $data);
+                $reviewId = $data['id'];
+            } else {
+                // Insert
+                $reviewId = $this->modelReview->addReview($data);
+                $result = $reviewId !== false;
+            }
+            
+            if ($result && $reviewId) {
+                // Lưu đánh giá nhà cung cấp
+                if (isset($data['serviceProviders']) && is_array($data['serviceProviders'])) {
+                    // Xóa đánh giá NCC cũ
+                    $this->modelReview->deleteAllServiceProviderReviews($reviewId);
+                    
+                    // Thêm mới
+                    foreach ($data['serviceProviders'] as $provider) {
+                        if (!empty($provider['tenNCC'])) {
+                            $this->modelReview->addServiceProviderReview($reviewId, $provider);
+                        }
+                    }
+                }
+                
+                echo json_encode(['success' => true, 'message' => 'Đã lưu đánh giá']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Lưu thất bại']);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit();
+    }
+
+
+
+    // Method 9: Lấy lịch làm việc của HDV
+    public function lichLamViec($hdvId = null)
+    {
+        try {
+            // Nếu không truyền hdvId, lấy từ session
+            if (!$hdvId) {
+                $hdvId = $_SESSION['hdv_id'] ?? 5; // Fallback to 5 for testing
+            }
+
+            // Lấy danh sách tour của HDV từ model
+            $tours = $this->modelHDV->getToursByHDV($hdvId);
+            
+            // Include view
+            include './views/HDV/lich_lam_viec.php';
+        } catch (Exception $e) {
+            echo "<script>alert('Lỗi: " . addslashes($e->getMessage()) . "'); window.history.back();</script>";
+            exit();
+        }
+    }
+
+
+
+    // Upload nhiều ảnh
+    private function uploadMultiplePhotos($files, $targetDir)
+    {
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+        
+        $uploadedFiles = [];
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        $count = count($files['name']);
+        for ($i = 0; $i < $count; $i++) {
+            if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                $fileName = time() . '_' . $i . '_' . basename($files['name'][$i]);
+                $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                
+                if (in_array($ext, $allowed)) {
+                    $targetPath = $targetDir . $fileName;
+                    if (move_uploaded_file($files['tmp_name'][$i], $targetPath)) {
+                        $uploadedFiles[] = $fileName;
+                    }
+                }
+            }
+        }
+        
+        return $uploadedFiles;
+    }
+
+    // API: Lấy danh sách yêu cầu theo khách hàng (for modal)
+    public function getRequirementsByCustomer()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $tourId = $_GET['tour_id'] ?? 0;
+            $customerId = $_GET['customer_id'] ?? 0;
+            
+            $requirements = $this->modelRequirement->getRequirementsByCustomer($tourId, $customerId);
+            echo json_encode(['success' => true, 'data' => $requirements]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit();
+    }
+
+    // API: Xóa nhật ký
+    public function deleteDiary()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $result = $this->modelReview->deleteDiary($data['id']);
+            echo json_encode(['success' => $result]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit();
+    }
+
+    // API: Xóa yêu cầu đặc biệt
+    public function deleteRequirement()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $result = $this->modelRequirement->deleteRequirement($data['id']);
+            echo json_encode(['success' => $result]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit();
+    }
+
+    // API: Hoàn tất checkpoint
+    public function completeCheckpoint()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            if (!isset($data['checkpointId'])) {
+                echo json_encode(['success' => false, 'message' => 'Missing checkpointId']);
+                exit();
+            }
+            
+            $status = $data['status'] ?? 'completed';
+            $result = $this->modelCheckpoint->updateCheckpointStatus($data['checkpointId'], $status);
+            
+            if ($result) {
+                echo json_encode(['success' => true, 'message' => 'Checkpoint completed']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to update checkpoint']);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit();
     }
 }

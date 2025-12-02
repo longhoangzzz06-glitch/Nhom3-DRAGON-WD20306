@@ -121,4 +121,30 @@ class HDVModel
             'id'         => $id,
         ]);
     }
+
+    // Lấy danh sách tour được phân công cho HDV
+    public function getToursByHDV($hdvId)
+    {
+        $sql = "SELECT 
+                    t.id,
+                    t.ten,
+                    t.gia,
+                    t.tgBatDau,
+                    t.tgKetThuc,
+                    t.moTa,
+                    dm.ten as danhMuc,
+                    COUNT(DISTINCT dh.id) as booking_count,
+                    COUNT(DISTINCT dhkh.khachHang_id) as customer_count
+                FROM don_hang dh
+                INNER JOIN tour t ON dh.tour_id = t.id
+                LEFT JOIN tour_danh_muc dm ON t.danhMuc_id = dm.id
+                LEFT JOIN don_hang_khach_hang dhkh ON dh.id = dhkh.donHang_id
+                WHERE dh.hdv_id = :hdv_id
+                GROUP BY t.id, t.ten, t.gia, t.tgBatDau, t.tgKetThuc, t.moTa, dm.ten
+                ORDER BY t.tgBatDau DESC";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['hdv_id' => $hdvId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
