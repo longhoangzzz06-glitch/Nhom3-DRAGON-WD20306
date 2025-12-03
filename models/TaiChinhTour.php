@@ -3,9 +3,9 @@ class TaiChinhTour
 {
     private $db;
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->db = $db;
+        $this->db = connectDB();
     }
 
     // Tính lãi/lỗ

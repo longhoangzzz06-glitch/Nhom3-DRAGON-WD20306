@@ -4,9 +4,9 @@ class DanhGiaNCC
     private $db;
     private $bang = "danh_gia_ncc";
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->db = $db;
+        $this->db = connectDB();
     }
 
     public function layTatCa()

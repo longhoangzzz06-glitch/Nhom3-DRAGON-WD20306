@@ -4,9 +4,9 @@ class CongNo
     private $db;
     private $bang = "cong_no";
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->db = $db;
+        $this->db = connectDB();
     }
 
     public function layTatCa()

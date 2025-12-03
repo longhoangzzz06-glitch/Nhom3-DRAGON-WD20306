@@ -3,23 +3,24 @@ require_once "./models/CongNo.php";
 
 class CongNoController
 {
+    private $db;
     private $model;
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->model = new CongNo($db);
+        $this->model = new CongNo();
     }
 
     // Danh sách công nợ & thanh toán
     public function index()
     {
         $congnos = $this->model->layTatCa();
-        require_once "./views/payment/index.php";
+        require_once "./views/cong_no/index.php";
     }
 
     public function create()
     {
-        require_once "./views/payment/create.php";
+        require_once "./views/cong_no/create.php";
     }
 
     public function store()
@@ -41,7 +42,7 @@ class CongNoController
     public function edit()
     {
         $congno = $this->model->tim($_GET['id']);
-        require_once "./views/payment/edit.php";
+        require_once "./views/cong_no/edit.php";
     }
 
     public function update()

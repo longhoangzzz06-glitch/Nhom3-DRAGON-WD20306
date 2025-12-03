@@ -3,23 +3,24 @@ require_once "./models/DanhGiaNCC.php";
 
 class DanhGiaNCCController
 {
+    private $db;
     private $model;
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->model = new DanhGiaNCC($db);
+        $this->model = new DanhGiaNCC();
     }
 
     // Danh sách đánh giá nhà cung cấp
     public function index()
     {
         $danhgias = $this->model->layTatCa();
-        require_once "./views/review/index.php";
+        require_once "./views/danh_gia_ncc/index.php";
     }
 
     public function create()
     {
-        require_once "./views/review/create.php";
+        require_once "./views/danh_gia_ncc/create.php";
     }
 
     public function store()
@@ -40,7 +41,7 @@ class DanhGiaNCCController
     public function edit()
     {
         $danhgia = $this->model->tim($_GET['id']);
-        require_once "./views/review/edit.php";
+        require_once "./views/danh_gia_ncc/edit.php";
     }
 
     public function update()

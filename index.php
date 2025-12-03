@@ -408,41 +408,41 @@ ob_start();
         'quan-ly-supplier' => (new SupplierController())->index(),
 
         // Trang thêm Supplier
-        'view-them-supplier' => (new SupplierController($db))->create(),
-        'them-supplier' => (new SupplierController($db))->store($_POST),
+        'view-them-supplier' => (new SupplierController())->create(),
+        'them-supplier' => (new SupplierController())->store($_POST),
 
         // Trang cập nhật Supplier
         'view-cap-nhat-supplier' => (new SupplierController())->edit($_GET['id']),
         'cap-nhat-supplier' => (new SupplierController())->update($_GET['id'], $_POST),
 
         // Xóa Supplier
-        'xoa-supplier' => (new SupplierController($db))->delete($_GET['id']),
+        'xoa-supplier' => (new SupplierController())->delete($_GET['id']),
         /* Trang quản lý Hợp đồng */
-        'quan-ly-hopdong' => (new HopDongController($db))->index(),
-        'view-them-hopdong' => (new HopDongController($db))->create(),
-        'them-hopdong' => (new HopDongController($db))->store($_POST),
-        'view-cap-nhat-hopdong' => (new HopDongController($db))->edit($_GET['id']),
-        'cap-nhat-hopdong' => (new HopDongController($db))->update($_GET['id'], $_POST),
-        'xoa-hopdong' => (new HopDongController($db))->delete($_GET['id']),
+        'quan-ly-hopdong' => (new HopDongController())->index(),
+        'view-them-hopdong' => (new HopDongController())->create(),
+        'them-hopdong' => (new HopDongController())->store($_POST),
+        'view-cap-nhat-hopdong' => (new HopDongController())->edit($_GET['id']),
+        'cap-nhat-hopdong' => (new HopDongController())->update($_GET['id'], $_POST),
+        'xoa-hopdong' => (new HopDongController())->delete($_GET['id']),
 
         /* Trang quản lý Công nợ */
-        'quan-ly-congno' => (new CongNoController($db))->index(),
-        'view-them-congno' => (new CongNoController($db))->create(),
-        'them-congno' => (new CongNoController($db))->store($_POST),
-        'view-cap-nhat-congno' => (new CongNoController($db))->edit($_GET['id']),
-        'cap-nhat-congno' => (new CongNoController($db))->update($_GET['id'], $_POST),
-        'xoa-congno' => (new CongNoController($db))->delete($_GET['id']),
+        'quan-ly-congno' => (new CongNoController())->index(),
+        'view-them-congno' => (new CongNoController())->create(),
+        'them-congno' => (new CongNoController())->store($_POST),
+        'view-cap-nhat-congno' => (new CongNoController())->edit($_GET['id']),
+        'cap-nhat-congno' => (new CongNoController())->update($_GET['id'], $_POST),
+        'xoa-congno' => (new CongNoController())->delete($_GET['id']),
 
         /* Trang quản lý Đánh giá NCC */
-        'quan-ly-danhgia' => (new DanhGiaNCCController($db))->index(),
-        'view-them-danhgia' => (new DanhGiaNCCController($db))->create(),
-        'them-danhgia' => (new DanhGiaNCCController($db))->store($_POST),
-        'view-cap-nhat-danhgia' => (new DanhGiaNCCController($db))->edit($_GET['id']),
-        'cap-nhat-danhgia' => (new DanhGiaNCCController($db))->update($_GET['id'], $_POST),
-        'xoa-danhgia' => (new DanhGiaNCCController($db))->delete($_GET['id']),
+        'quan-ly-danhgia' => (new DanhGiaNCCController())->index(),
+        'view-them-danhgia' => (new DanhGiaNCCController())->create(),
+        'them-danhgia' => (new DanhGiaNCCController())->store($_POST),
+        'view-cap-nhat-danhgia' => (new DanhGiaNCCController())->edit($_GET['id']),
+        'cap-nhat-danhgia' => (new DanhGiaNCCController())->update($_GET['id'], $_POST),
+        'xoa-danhgia' => (new DanhGiaNCCController())->delete($_GET['id']),
 
         /* Trang Báo cáo Tài chính */
-        'bao-cao-taichinh' => (new TaiChinhTourController($db))->baoCao(),
+        'bao-cao-taichinh' => (new TaiChinhTourController())->baoCao(),
       };
       ?>
     </main>

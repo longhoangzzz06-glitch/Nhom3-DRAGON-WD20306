@@ -3,24 +3,25 @@ require_once "./models/HopDong.php";
 
 class HopDongController
 {
+    private $db;
     private $model;
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->model = new HopDong($db);
+        $this->model = new HopDong();
     }
 
     // Danh sách hợp đồng
     public function index()
     {
         $hopdongs = $this->model->layTatCa();
-        require_once "./views/contract/index.php";
+        require_once "./views/hop_dong/index.php";
     }
 
     // Thêm hợp đồng mới
     public function create()
     {
-        require_once "./views/contract/create.php";
+        require_once "./views/hop_dong/create.php";
     }
 
     public function store()
@@ -35,7 +36,7 @@ class HopDongController
 
         // Upload file hợp đồng
         if (!empty($_FILES['file_hop_dong']['name'])) {
-            $data['file_hop_dong'] = "uploads/contracts/" . time() . "_" . $_FILES['file_hop_dong']['name'];
+            $data['file_hop_dong'] = "uploads/hopdongs/" . time() . "_" . $_FILES['file_hop_dong']['name'];
             move_uploaded_file($_FILES['file_hop_dong']['tmp_name'], $data['file_hop_dong']);
         }
 

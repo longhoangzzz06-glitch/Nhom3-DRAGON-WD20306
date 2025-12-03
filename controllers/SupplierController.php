@@ -2,6 +2,7 @@
 
 class SupplierController
 {
+    private $db;
     private $model;
 
     public function __construct()

@@ -3,11 +3,12 @@ require_once "./models/TaiChinhTour.php";
 
 class TaiChinhTourController
 {
+    private $db;
     private $model;
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->model = new TaiChinhTour($db);
+        $this->model = new TaiChinhTour();
     }
 
     // Báo cáo lãi/lỗ từng tour
@@ -15,6 +16,6 @@ class TaiChinhTourController
     {
         $tourId = $_GET['tour_id'] ?? null;
         $baocao = $this->model->tinhLaiLo($tourId);
-        require_once "./views/taichinh/index.php";
+        require_once "./views/taichinh/baocao.php";
     }
 }

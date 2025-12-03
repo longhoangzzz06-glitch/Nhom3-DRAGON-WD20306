@@ -4,9 +4,9 @@ class HopDong
     private $db;
     private $bang = "hop_dong";
 
-    public function __construct($db)
+    public function __construct()
     {
-        $this->db = $db;
+        $this->db = connectDB();
     }
 
     public function layTatCa()
