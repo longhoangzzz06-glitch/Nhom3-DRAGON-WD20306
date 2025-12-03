@@ -1,3 +1,4 @@
+<?php date_default_timezone_set('Asia/Ho_Chi_Minh'); ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -215,11 +216,6 @@
       <p style="margin: 0; opacity: 0.9; font-size: 14px;"><i class="fas fa-calendar"></i> <?= date('d/m/Y', strtotime($tour['tgBatDau'])) ?> - <?= date('d/m/Y', strtotime($tour['tgKetThuc'])) ?></p>
     </div>
 
-    <!-- Time Display -->
-    <div class="time-display">
-      <i class="fas fa-clock"></i> <span id="current-time"></span>
-    </div>
-
     <!-- Checkpoint Tabs -->
     <?php if (!empty($checkpoints)): ?>
     <div class="checkpoint-tabs">
@@ -236,24 +232,18 @@
           <?php endif; ?>
           <?= htmlspecialchars($cp['name']) ?>
         </div>
-        <div style="font-size: 12px; opacity: 0.9;">
-          <i class="fas fa-clock"></i> <?= htmlspecialchars($cp['time']) ?>
-        </div>
       </div>
       <?php endforeach; ?>
     </div>
     <?php else: ?>
     <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-      <p style="margin: 0; color: #856404;"><i class="fas fa-info-circle"></i> <strong>Chưa có checkpoint nào.</strong> Cần chạy migration để tạo checkpoint cho tour này.</p>
+      <p style="margin: 0; color: #856404;"><i class="fas fa-info-circle"></i> <strong>Chưa có checkpoint nào.</strong>
     </div>
     <?php endif; ?>
 
     <!-- Active Checkpoint Info -->
     <div class="checkpoint-info">
       <h3 style="margin: 0 0 10px 0;"><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($activeCheckpoint['name']) ?></h3>
-      <p style="margin: 5px 0; color: #666;">
-        <i class="fas fa-clock"></i> Thời gian: <strong><?= htmlspecialchars($activeCheckpoint['time']) ?></strong>
-      </p>
       <p style="margin: 5px 0; color: #666;">
         <i class="fas fa-location-dot"></i> Địa điểm: <strong><?= htmlspecialchars($activeCheckpoint['location']) ?></strong>
       </p>
@@ -330,6 +320,11 @@
           <div class="customer-info">
             <i class="fas fa-phone"></i> <?= htmlspecialchars($customer['dienThoai']) ?>
           </div>
+          <div class="customer-info" id="time-customer-<?= $customer['id'] ?>" style="color: #007bff; font-size: 12px; min-height: 18px;">
+            <?php if (!empty($customer['checkin_time'])): ?>
+            <i class="fas fa-history"></i> <?= date('H:i d/m/Y', strtotime($customer['checkin_time'])) ?>
+            <?php endif; ?>
+          </div>
           <?php if (!empty($customer['ghiChu'])): ?>
           <div class="customer-info" style="color: #dc3545; font-weight: 600;">
             <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($customer['ghiChu']) ?>
@@ -355,15 +350,6 @@
 </div>
 
 <script>
-// Update current time
-function updateTime() {
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  document.getElementById('current-time').textContent = timeStr;
-}
-setInterval(updateTime, 1000);
-updateTime();
-
 // Update statistics
 function updateStats() {
   const cards = document.querySelectorAll('.customer-card');
@@ -397,8 +383,13 @@ function saveCheckinStatus(customerId, status) {
   const card = document.getElementById('customer-' + customerId);
   const badge = document.getElementById('badge-' + customerId);
   
-  // Get active checkpoint (first checkpoint or from URL)
-  const checkpointId = <?= !empty($checkpoints) ? $checkpoints[0]['id'] : 0 ?>;
+  // Get active checkpoint
+  const checkpointId = <?= $activeCheckpoint['id'] ?>;
+  
+  if (checkpointId === 0) {
+    alert('Vui lòng chọn một checkpoint để điểm danh!');
+    return;
+  }
   
   // Update UI immediately
   if (status === 'present') {
@@ -418,7 +409,7 @@ function saveCheckinStatus(customerId, status) {
   updateStats();
   
   // Send to backend
-  fetch('index.php?act=api-save-checkin', {
+  fetch('?act=hdv-save-checkin', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -431,7 +422,6 @@ function saveCheckinStatus(customerId, status) {
   })
   .then(response => {
     return response.text().then(text => {
-      console.log('Raw response:', text);
       try {
         return JSON.parse(text);
       } catch (e) {
@@ -443,12 +433,21 @@ function saveCheckinStatus(customerId, status) {
   })
   .then(data => {
     if (data.success) {
-      console.log('Đã lưu điểm danh:', data);
       // Update stats from server if provided
       if (data.stats) {
         document.getElementById('present-count').textContent = data.stats.present || 0;
         document.getElementById('absent-count').textContent = data.stats.absent || 0;
         document.getElementById('pending-count').textContent = data.stats.pending || 0;
+      }
+      
+      // Update time display
+      const timeContainer = document.getElementById('time-customer-' + customerId);
+      if (timeContainer) {
+        if (data.checkinTime && status !== null) {
+          timeContainer.innerHTML = '<i class="fas fa-history"></i> ' + data.checkinTime;
+        } else {
+          timeContainer.innerHTML = '';
+        }
       }
     } else {
       alert('Lỗi khi lưu điểm danh: ' + (data.message || 'Unknown error'));
@@ -477,9 +476,14 @@ function completeCheckpoint() {
   }
   
   // Mark checkpoint as completed
-  const checkpointId = <?= !empty($checkpoints) ? $checkpoints[0]['id'] : 0 ?>;
+  const checkpointId = <?= $activeCheckpoint['id'] ?>;
   
-  fetch('?act=api-complete-checkpoint', {
+  if (checkpointId === 0) {
+    alert('Không có checkpoint nào để hoàn tất');
+    return;
+  }
+  
+  fetch('?act=hdv-complete-checkpoint', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

@@ -12,6 +12,7 @@ require_once './controllers/TourController.php';
 require_once './controllers/BookingController.php';
 require_once './controllers/ReportController.php';
 require_once './controllers/TourDetailController.php';
+require_once './controllers/DiaDiemController.php';
 
 // Require toàn bộ file Models
 require_once './models/HDVModel.php';
@@ -22,31 +23,34 @@ require_once './models/CheckpointModel.php';
 require_once './models/RequirementModel.php';
 require_once './models/ReviewModel.php';
 require_once './models/TourDetailModel.php';
+require_once './models/DiaDiemModel.php';
 
 // Check if this is an API request (handle before HTML output)
 $act = $_GET['act'] ?? '/';
 $apiRoutes = [
-    'api-save-checkin',
-    'api-complete-checkpoint',
-    'api-save-requirement',
-    'api-delete-requirement',
-    'api-get-requirements-by-customer',
-    'api-save-diary',
-    'api-delete-diary',
-    'api-save-review'
+    'hdv-save-checkin',
+    'hdv-complete-checkpoint',
+    'hdv-save-requirement',
+    'hdv-delete-requirement',
+    'hdv-get-requirements-by-customer',
+    'hdv-save-diary',
+    'hdv-delete-diary',
+    'hdv-save-review',
+    'api-update-diadiem-order'
 ];
 
 if (in_array($act, $apiRoutes)) {
     // Handle API routes without HTML wrapper
     match ($act) {
-        'api-save-checkin' => (new HDVController())->saveCheckin(),
-        'api-complete-checkpoint' => (new HDVController())->completeCheckpoint(),
-        'api-save-requirement' => (new HDVController())->saveRequirement(),
-        'api-delete-requirement' => (new HDVController())->deleteRequirement(),
-        'api-get-requirements-by-customer' => (new HDVController())->getRequirementsByCustomer(),
-        'api-save-diary' => (new HDVController())->saveDiary(),
-        'api-delete-diary' => (new HDVController())->deleteDiary(),
-        'api-save-review' => (new HDVController())->saveReview(),
+        'hdv-save-checkin' => (new HDVController())->saveCheckin(),
+        'hdv-complete-checkpoint' => (new HDVController())->completeCheckpoint(),
+        'hdv-save-requirement' => (new HDVController())->saveRequirement(),
+        'hdv-delete-requirement' => (new HDVController())->deleteRequirement(),
+        'hdv-get-requirements-by-customer' => (new HDVController())->getRequirementsByCustomer(),
+        'hdv-save-diary' => (new HDVController())->saveDiary(),
+        'hdv-delete-diary' => (new HDVController())->deleteDiary(),
+        'hdv-save-review' => (new HDVController())->saveReview(),
+        'api-update-diadiem-order' => (new DiaDiemController())->updateOrder(),
     };
     exit(); // Stop execution after API response
 }
@@ -321,6 +325,13 @@ if (in_array($act, $apiRoutes)) {
                       <p class="nav-text">Quản lý Tour</p>
                   </a>
               </li>
+              <!-- Quản lý Địa điểm -->
+              <li class="nav-item" id="nav-diadiem">
+                  <a href="index.php?act=quan-ly-dia-diem" class="nav-link">
+                      <i class="nav-icon bi bi-geo-alt"></i>
+                      <p class="nav-text">Quản lý Địa điểm</p>
+                  </a>
+              </li>
               <!-- Quản lý booking -->
               <li class="nav-item" id="nav-booking">
                   <a href="index.php?act=quan-ly-booking" class="nav-link">
@@ -336,7 +347,7 @@ if (in_array($act, $apiRoutes)) {
                   </a>
               </li>
               <!-- HDV - Lịch làm việc -->
-              <li class="nav-item" id="nav-hdv">
+              <li class="nav-item" id="nav-hdv-work">
                   <a href="index.php?act=hdv-lich-lam-viec" class="nav-link">
                       <i class="nav-icon bi bi-calendar3"></i>
                       <p class="nav-text">Lịch làm việc HDV</p>
@@ -381,6 +392,18 @@ if (in_array($act, $apiRoutes)) {
             // Xử lý cập nhật Tours
             'view-cap-nhat-tour'=> (new TourController())->viewCapNhatTour($_GET['id']),
             'cap-nhat-tour'=> (new TourController())->capNhatTour($_GET['id'], $_POST),
+
+            /* Trang quản lý Địa điểm */
+            // Hiển thị danh sách Địa điểm
+            'quan-ly-dia-diem'=> (new DiaDiemController())->danhSachDiaDiem(),
+            // Xử lý thêm Địa điểm
+            'view-them-dia-diem'=> (new DiaDiemController())->viewThemDiaDiem(),
+            'them-dia-diem'=> (new DiaDiemController())->themDiaDiem($_POST),
+            // Xử lý xóa Địa điểm
+            'xoa-dia-diem'=> (new DiaDiemController())->xoaDiaDiem($_GET['id']),
+            // Xử lý cập nhật Địa điểm
+            'view-cap-nhat-dia-diem'=> (new DiaDiemController())->viewCapNhatDiaDiem($_GET['id']),
+            'cap-nhat-dia-diem'=> (new DiaDiemController())->capNhatDiaDiem($_GET['id'], $_POST),
 
             /* Trang quản lý Booking */
             // Hiển thị danh sách Booking
@@ -487,6 +510,13 @@ if (in_array($act, $apiRoutes)) {
           'view-cap-nhat-tour': 'nav-tour',
           'cap-nhat-tour': 'nav-tour',
           
+          'quan-ly-dia-diem': 'nav-diadiem',
+          'view-them-dia-diem': 'nav-diadiem',
+          'them-dia-diem': 'nav-diadiem',
+          'xoa-dia-diem': 'nav-diadiem',
+          'view-cap-nhat-dia-diem': 'nav-diadiem',
+          'cap-nhat-dia-diem': 'nav-diadiem',
+
           'quan-ly-booking': 'nav-booking',
           'xoa-booking': 'nav-booking',
           'view-cap-nhat-booking': 'nav-booking',
@@ -496,6 +526,14 @@ if (in_array($act, $apiRoutes)) {
           
           'bao-cao-van-hanh': 'nav-report',
           'bao-cao-export': 'nav-report',
+
+          // HDV Routes
+          'hdv-lich-lam-viec': 'nav-hdv-work',
+          'hdv-chi-tiet-tour': 'nav-hdv-work',
+          'hdv-nhat-ky-tour': 'nav-hdv-work',
+          'hdv-diem-danh': 'nav-hdv-work',
+          'hdv-yeu-cau-dac-biet': 'nav-hdv-work',
+          'hdv-danh-gia-tour': 'nav-hdv-work',
         };
         
         // Lấy menu ID tương ứng

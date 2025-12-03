@@ -73,7 +73,7 @@ class CheckpointModel
     }
 
     // Lưu trạng thái điểm danh
-    public function saveCheckin($donHangKhachHangId, $checkpointId, $status, $hdvId)
+    public function saveCheckin($donHangKhachHangId, $checkpointId, $status, $hdvId, $checkinTime = null)
     {
         // If status is null, delete the checkin record (undo)
         if ($status === null || $status === '') {
@@ -87,21 +87,25 @@ class CheckpointModel
             ]);
         }
         
+        // Use provided time or current time (DB will handle if null, but we prefer explicit)
+        $timeVal = $checkinTime ? $checkinTime : date('Y-m-d H:i:s');
+
         // Insert or update checkin record
         $sql = "INSERT INTO diem_danh 
                 (donHangKhachHang_id, diaDiem_id, trangThai, hdv_xacNhan_id, tgDiemDanh)
-                VALUES (:dhkh_id, :dd_id, :status, :hdv_id, NOW())
+                VALUES (:dhkh_id, :dd_id, :status, :hdv_id, :tgDiemDanh)
                 ON DUPLICATE KEY UPDATE 
                     trangThai = :status,
                     hdv_xacNhan_id = :hdv_id,
-                    tgDiemDanh = NOW()";
+                    tgDiemDanh = :tgDiemDanh";
         
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([
             'dhkh_id' => $donHangKhachHangId,
             'dd_id' => $checkpointId,
             'status' => $status,
-            'hdv_id' => $hdvId
+            'hdv_id' => $hdvId,
+            'tgDiemDanh' => $timeVal
         ]);
     }
 

@@ -251,6 +251,9 @@
     // Data from controller: $tour, $diaryEntries
     // No mock data - all data fetched from database
     ?>
+    <script>
+      const diaryEntries = <?= json_encode($diaryEntries) ?>;
+    </script>
 
     <!-- Tour Info Card -->
     <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -310,9 +313,6 @@
           <?php endif; ?>
 
           <div class="diary-tags">
-            <span class="diary-tag tag-event">
-              <i class="fas fa-star"></i> <?= $entry['type'] ?>
-            </span>
             <?php if (!empty($entry['incident'])): ?>
             <span class="diary-tag tag-incident">
               <i class="fas fa-exclamation-circle"></i> Có sự cố
@@ -351,47 +351,38 @@
       <span class="close-modal" onclick="closeDiaryModal()">&times;</span>
     </div>
     <form id="diaryForm" onsubmit="saveDiary(event)">
-      <input type="hidden" id="diary-id" value="">
+      <input type="hidden" id="diary-id" name="id" value="">
+      <input type="hidden" id="tour-id" name="tour_id" value="<?= $tour['id'] ?>">
+      <input type="hidden" name="hdv_id" value="<?= $_SESSION['hdv_id'] ?? 5 ?>">
       
       <div class="form-group">
         <label for="diary-date">Ngày:</label>
-        <input type="date" id="diary-date" required>
+        <input type="date" id="diary-date" name="date" required>
       </div>
 
       <div class="form-group">
         <label for="diary-type">Loại:</label>
-        <select id="diary-type" required>
-          <option value="Sự kiện">Sự kiện</option>
-          <option value="Hoạt động">Hoạt động</option>
-          <option value="Sự cố">Sự cố</option>
-          <option value="Ghi chú">Ghi chú</option>
+        <select id="diary-type" name="loai" required>
+          <option value="event">Sự kiện</option>
+          <option value="activity">Hoạt động</option>
+          <option value="incident">Sự cố</option>
+          <option value="note">Ghi chú</option>
         </select>
       </div>
 
       <div class="form-group">
         <label for="diary-title">Tiêu đề:</label>
-        <input type="text" id="diary-title" placeholder="VD: Khởi hành tour - Ngày đầu tiên" required>
+        <input type="text" id="diary-title" name="tieuDe" placeholder="VD: Khởi hành tour - Ngày đầu tiên" required>
       </div>
 
       <div class="form-group">
-        <label for="diary-content">Diễn biến chi tiết:</label>
-        <textarea id="diary-content" placeholder="Mô tả chi tiết diễn biến trong ngày..." required></textarea>
+        <label for="diary-content">Nội dung chi tiết:</label>
+        <textarea id="diary-content" name="noiDung" placeholder="Mô tả chi tiết diễn biến, sự cố hoặc ghi chú..." required></textarea>
       </div>
 
       <div class="form-group">
-        <label for="diary-incident">Sự cố & Cách xử lý (nếu có):</label>
-        <textarea id="diary-incident" placeholder="Mô tả sự cố (nếu có) và cách xử lý..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="diary-feedback">Phản hồi khách hàng (nếu có):</label>
-        <textarea id="diary-feedback" placeholder="Ghi lại phản hồi của khách hàng..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="diary-images">Hình ảnh (chưa hoạt động):</label>
-        <input type="file" id="diary-images" multiple accept="image/*" disabled>
-        <small style="color: #999;">Chức năng upload ảnh đang phát triển</small>
+        <label for="diary-images">Hình ảnh:</label>
+        <input type="file" id="diary-images" name="photos[]" multiple accept="image/*">
       </div>
 
       <div class="form-actions">
@@ -409,6 +400,8 @@ function openAddDiaryModal() {
   document.getElementById('modal-title').textContent = 'Thêm nhật ký mới';
   document.getElementById('diary-id').value = '';
   document.getElementById('diaryForm').reset();
+  // Set default date to today
+  document.getElementById('diary-date').valueAsDate = new Date();
   document.getElementById('diaryModal').classList.add('active');
 }
 
@@ -417,21 +410,71 @@ function closeDiaryModal() {
 }
 
 function editDiary(id) {
-  // TODO: Load diary data and populate form
-  alert('Chức năng sửa nhật ký đang phát triển');
+  const entry = diaryEntries.find(e => e.id == id);
+  if (!entry) return;
+
+  document.getElementById('modal-title').textContent = 'Cập nhật nhật ký';
+  document.getElementById('diary-id').value = entry.id;
+  document.getElementById('diary-date').value = entry.date;
+  // Map display type back to value (Event -> event)
+  document.getElementById('diary-type').value = entry.type.toLowerCase();
+  document.getElementById('diary-title').value = entry.title;
+  document.getElementById('diary-content').value = entry.content;
+  
+  document.getElementById('diaryModal').classList.add('active');
 }
 
 function deleteDiary(id) {
   if (confirm('Bạn có chắc muốn xóa nhật ký này?')) {
-    alert('Chức năng xóa nhật ký đang phát triển');
+    fetch('?act=hdv-delete-diary', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: id })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Đã xóa nhật ký');
+        location.reload();
+      } else {
+        alert('Lỗi: ' + (data.message || 'Không thể xóa'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Đã xảy ra lỗi khi xóa');
+    });
   }
 }
 
 function saveDiary(event) {
   event.preventDefault();
-  // TODO: Save diary to database
-  alert('Chức năng lưu nhật ký đang phát triển');
-  closeDiaryModal();
+  
+  const form = document.getElementById('diaryForm');
+  const formData = new FormData(form);
+  
+  // Add tour_id explicitly if not in form (it is in form now)
+  // formData.append('tour_id', <?= $tour['id'] ?>);
+
+  fetch('?act=hdv-save-diary', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      location.reload();
+    } else {
+      alert('Lỗi: ' + (data.message || 'Không thể lưu'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Đã xảy ra lỗi khi lưu');
+  });
 }
 
 function viewImage(src) {

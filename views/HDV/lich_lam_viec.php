@@ -17,15 +17,18 @@
       border-radius: 8px;
       padding: 20px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      border-left: 4px solid #007bff;
+      border-left: 4px solid #2563eb;
       transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
     .tour-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 8px 16px rgba(0,0,0,0.15);
     }
     .tour-card.ongoing {
-      border-left-color: #28a745;
+      border-left-color: #10b981;
     }
     .tour-card.upcoming {
       border-left-color: #ffc107;
@@ -53,7 +56,7 @@
     }
     .tour-meta-item i {
       width: 20px;
-      color: #007bff;
+      color: #2563eb;
     }
     .tour-status {
       display: inline-block;
@@ -62,10 +65,11 @@
       font-size: 12px;
       font-weight: 600;
       margin-top: 10px;
+      align-self: flex-start;
     }
     .status-ongoing {
-      background: #d4edda;
-      color: #155724;
+      background: #d1fae5;
+      color: #065f46;
     }
     .status-upcoming {
       background: #fff3cd;
@@ -76,14 +80,15 @@
       color: #383d41;
     }
     .tour-actions {
-      margin-top: 15px;
+      margin-top: auto;
+      padding-top: 15px;
       display: flex;
       gap: 10px;
     }
     .btn-detail {
       flex: 1;
       padding: 8px;
-      background: #007bff;
+      background: #2563eb;
       color: white;
       border: none;
       border-radius: 4px;
@@ -91,12 +96,12 @@
       font-size: 14px;
     }
     .btn-detail:hover {
-      background: #0056b3;
+      background: #1d4ed8;
     }
     .btn-diary {
       flex: 1;
       padding: 8px;
-      background: #28a745;
+      background: #10b981;
       color: white;
       border: none;
       border-radius: 4px;
@@ -104,7 +109,7 @@
       font-size: 14px;
     }
     .btn-diary:hover {
-      background: #218838;
+      background: #059669;
     }
     .empty-state {
       text-align: center;
@@ -132,11 +137,11 @@
       <div class="search-group">
         <label>Tháng hiện tại:</label>
         <div style="display: flex; gap: 10px; align-items: center;">
-          <button onclick="changeMonth(-1)" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          <button onclick="changeMonth(-1)" style="padding: 8px 12px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer;">
             <i class="fas fa-chevron-left"></i>
           </button>
           <h4 id="current-month" style="margin: 0; min-width: 120px; text-align: center;">Tháng 12/2025</h4>
-          <button onclick="changeMonth(1)" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          <button onclick="changeMonth(1)" style="padding: 8px 12px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer;">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -181,6 +186,7 @@
 // Tours data from database
 const tours = <?= json_encode($tours ?? [], JSON_UNESCAPED_UNICODE) ?>;
 let currentFilter = 'all';
+let currentMonth = new Date();
 
 function getStatus(startDate, endDate) {
   const today = new Date();
@@ -208,24 +214,47 @@ function calculateDays(startDate, endDate) {
   return diff;
 }
 
+function isTourInMonth(tour, date) {
+    const tourStart = new Date(tour.tgBatDau);
+    const tourEnd = new Date(tour.tgKetThuc);
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    
+    // Check overlap: start <= monthEnd AND end >= monthStart
+    return tourStart <= monthEnd && tourEnd >= monthStart;
+}
+
+function updateMonthDisplay() {
+    const monthNames = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+        "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+    ];
+    document.getElementById('current-month').textContent = `${monthNames[currentMonth.getMonth()]}/${currentMonth.getFullYear()}`;
+}
+
 function renderTours() {
   const container = document.getElementById('tour-list');
   const emptyState = document.getElementById('empty-state');
   
-  const filtered = tours.filter(tour => {
+  // Filter by month first, then by status
+  const toursInMonth = tours.filter(tour => isTourInMonth(tour, currentMonth));
+  
+  const filtered = toursInMonth.filter(tour => {
     if (currentFilter === 'all') return true;
     return getStatus(tour.tgBatDau, tour.tgKetThuc) === currentFilter;
   });
   
-  // Update counts
-  document.getElementById('count-all').textContent = tours.length;
-  document.getElementById('count-ongoing').textContent = tours.filter(t => getStatus(t.tgBatDau, t.tgKetThuc) === 'ongoing').length;
-  document.getElementById('count-upcoming').textContent = tours.filter(t => getStatus(t.tgBatDau, t.tgKetThuc) === 'upcoming').length;
-  document.getElementById('count-completed').textContent = tours.filter(t => getStatus(t.tgBatDau, t.tgKetThuc) === 'completed').length;
+  // Update counts based on tours in the current month
+  document.getElementById('count-all').textContent = toursInMonth.length;
+  document.getElementById('count-ongoing').textContent = toursInMonth.filter(t => getStatus(t.tgBatDau, t.tgKetThuc) === 'ongoing').length;
+  document.getElementById('count-upcoming').textContent = toursInMonth.filter(t => getStatus(t.tgBatDau, t.tgKetThuc) === 'upcoming').length;
+  document.getElementById('count-completed').textContent = toursInMonth.filter(t => getStatus(t.tgBatDau, t.tgKetThuc) === 'completed').length;
   
   if (filtered.length === 0) {
     container.style.display = 'none';
     emptyState.style.display = 'block';
+    // Update empty state message based on month
+    const monthStr = `${currentMonth.getMonth() + 1}/${currentMonth.getFullYear()}`;
+    emptyState.querySelector('p').textContent = `Bạn chưa được phân công tour nào trong tháng ${monthStr}.`;
     return;
   }
   
@@ -293,11 +322,13 @@ function viewTourDiary(tourId) {
 }
 
 function changeMonth(delta) {
-  // TODO: Implement month navigation
-  alert('Chức năng đang phát triển');
+  currentMonth.setMonth(currentMonth.getMonth() + delta);
+  updateMonthDisplay();
+  renderTours();
 }
 
 // Initialize
+updateMonthDisplay();
 renderTours();
 </script>
 

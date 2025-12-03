@@ -135,3 +135,34 @@ CREATE TABLE IF NOT EXISTS diem_danh (
     INDEX idx_trang_thai (trangThai),
     INDEX idx_diem_danh_time (tgDiemDanh)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- 1. Tạo bảng đánh giá riêng cho HDV
+CREATE TABLE `hdv_danh_gia` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `tour_id` INT NOT NULL COMMENT 'ID tour',
+  `hdv_id` INT NOT NULL COMMENT 'HDV đánh giá',
+  `diem` INT DEFAULT 0 COMMENT 'Điểm tổng quan',
+  `danhGia_anToan` INT DEFAULT 0 COMMENT 'Đánh giá an toàn 1-5',
+  `danhGia_haiLong` INT DEFAULT 0 COMMENT 'Đánh giá hài lòng 1-5',
+  `diemNoiBat` TEXT COMMENT 'Điểm nổi bật/điều tốt',
+  `vanDe` TEXT COMMENT 'Vấn đề/cần cải thiện',
+  `binhLuan` TEXT COMMENT 'Nhận xét chung',
+  `anhMinhHoa` VARCHAR(500) DEFAULT NULL COMMENT 'Ảnh minh họa',
+  `trangThai` VARCHAR(50) DEFAULT 'draft' COMMENT 'draft hoặc submitted',
+  `ngayTao` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `ngayCapNhat` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_tour` (`tour_id`),
+  KEY `idx_hdv` (`hdv_id`),
+  CONSTRAINT `fk_hdvdanhgia_tour` FOREIGN KEY (`tour_id`) REFERENCES `tour`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_hdvdanhgia_hdv` FOREIGN KEY (`hdv_id`) REFERENCES `hdv`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 2. Cập nhật bảng đánh giá nhà cung cấp để tham chiếu đến bảng hdv_danh_gia
+-- Lưu ý: Lệnh này giả định bảng danh_gia_nha_cung_cap đã tồn tại (từ file migration trước).
+-- Nếu chưa tồn tại, hãy tạo mới với cột hdv_danh_gia_id thay vì danhGia_id.
+
+ALTER TABLE `danh_gia_nha_cung_cap` DROP FOREIGN KEY `fk_danhgia_ncc`;
+ALTER TABLE `danh_gia_nha_cung_cap` CHANGE COLUMN `danhGia_id` `hdv_danh_gia_id` INT NOT NULL COMMENT 'ID từ hdv_danh_gia';
+ALTER TABLE `danh_gia_nha_cung_cap` ADD CONSTRAINT `fk_danhgiancc_hdvdanhgia` FOREIGN KEY (`hdv_danh_gia_id`) REFERENCES `hdv_danh_gia`(`id`) ON DELETE CASCADE;

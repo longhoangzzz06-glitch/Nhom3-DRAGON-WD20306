@@ -121,7 +121,7 @@ class HDVController
             }
             // Cho các lỗi khác, hiển thị thông báo chung
             echo "<script>
-                alert('Lỗi: " . addslashes(substr($errorMsg, 0, 100)) . "');
+                alert('Đã xảy ra lỗi khi thêm hướng dẫn viên. Vui lòng thử lại sau.');
                 window.location.href = 'index.php?act=view-them-hdv';
             </script>";
             exit();
@@ -151,7 +151,7 @@ class HDVController
         } catch (Exception $e) {
             // Xử lý lỗi
             echo "<script>
-                alert('Lỗi: " . addslashes($e->getMessage()) . "');
+                alert('Đã xảy ra lỗi khi xóa hướng dẫn viên. Vui lòng thử lại sau.');
                 window.location.href = 'index.php?act=/';
             </script>";
             exit();
@@ -264,7 +264,7 @@ class HDVController
             
             // Kiểm tra lỗi trường null (1084)
             echo "<script>
-                alert('Lỗi: " . addslashes(substr($errorMsg, 0, 100)) . "');
+                alert('Đã xảy ra lỗi khi cập nhật thông tin. Vui lòng thử lại sau.');
                 window.history.back();
             </script>";
             exit();
@@ -298,11 +298,30 @@ class HDVController
                 ];
             }
             
-            // Set active checkpoint (first pending or first one)
-            $activeCheckpoint = !empty($checkpoints) ? $checkpoints[0] : ['name' => 'N/A', 'time' => 'N/A', 'location' => 'N/A'];
+            // Set active checkpoint
+            $activeCheckpointId = isset($_GET['checkpoint']) ? intval($_GET['checkpoint']) : 0;
+            $activeCheckpoint = null;
+            
+            if ($activeCheckpointId > 0) {
+                foreach ($checkpoints as $cp) {
+                    if ($cp['id'] == $activeCheckpointId) {
+                        $activeCheckpoint = $cp;
+                        break;
+                    }
+                }
+            }
+            
+            if (!$activeCheckpoint && !empty($checkpoints)) {
+                $activeCheckpoint = $checkpoints[0];
+            }
+            
+            if (!$activeCheckpoint) {
+                $activeCheckpoint = ['id' => 0, 'name' => 'N/A', 'time' => 'N/A', 'location' => 'N/A'];
+            }
             
             // Lấy danh sách khách hàng với trạng thái điểm danh
-            $rawCustomers = $this->modelCheckpoint->getCustomersByTourWithCheckin($tourId);
+            // Pass checkpoint ID to get specific status
+            $rawCustomers = $this->modelCheckpoint->getCustomersByTourWithCheckin($tourId, $activeCheckpoint['id']);
             
             // Format customers for view
             $customers = [];
@@ -314,7 +333,8 @@ class HDVController
                     'gioiTinh' => $c['gioiTinh'],
                     'dienThoai' => $c['dienThoai'],
                     'ghiChu' => $c['ghiChuDB'] ?? '',
-                    'checkin_status' => $c['trangThai_checkin'] ?? 'pending'
+                    'checkin_status' => $c['trangThai_checkin'] ?? 'pending',
+                    'checkin_time' => $c['tgDiemDanh'] ?? null
                 ];
             }
             
@@ -324,7 +344,7 @@ class HDVController
             // Include view
             include './views/HDV/diem_danh_khach.php';
         } catch (Exception $e) {
-            echo "<script>alert('Lỗi: " . addslashes($e->getMessage()) . "'); window.history.back();</script>";
+            echo "<script>alert('Đã xảy ra lỗi khi tải trang điểm danh. Vui lòng thử lại sau.'); window.history.back();</script>";
             exit();
         }
     }
@@ -348,17 +368,26 @@ class HDVController
             // Allow null status for undo
             $status = $data['status'] ?? null;
             
+            // Set timezone to Vietnam (GMT+7)
+            date_default_timezone_set('Asia/Ho_Chi_Minh');
+            $currentDateTime = date('Y-m-d H:i:s');
+            
             $result = $this->modelCheckpoint->saveCheckin(
                 $data['donHangKhachHangId'],
                 $data['checkpointId'],
                 $status,
-                $data['hdvId']
+                $data['hdvId'],
+                $currentDateTime
             );
             
             if ($result) {
                 // Lấy thống kê mới sau khi cập nhật
                 $stats = $this->modelCheckpoint->getCheckinStats($data['tourId'] ?? 0, $data['checkpointId']);
-                echo json_encode(['success' => true, 'stats' => $stats]);
+                echo json_encode([
+                    'success' => true, 
+                    'stats' => $stats,
+                    'checkinTime' => date('H:i d/m/Y', strtotime($currentDateTime))
+                ]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Failed to save checkin']);
             }
@@ -376,32 +405,42 @@ class HDVController
             $tour = $this->modelTourDetail->getTourInfo($tourId);
             $tour_id = $tourId;
             
-            // Lấy tất cả yêu cầu theo tour
+            // Lấy danh sách tất cả khách hàng trong tour
+            $allCustomers = $this->modelRequirement->getCustomersWithRequirements($tourId);
+            
+            // Lấy chi tiết các yêu cầu
             $allRequirements = $this->modelRequirement->getRequirementsByTour($tourId);
             
-            // Group by customer
-            $customersMap = [];
-            foreach ($allRequirements as $req) {
-                $custId = $req['khachHang_id'];
-                if (!isset($customersMap[$custId])) {
-                    $customersMap[$custId] = [
-                        'id' => $custId,
-                        'ten' => $req['khachHang_ten'],
-                        'tuoi' => $req['tuoi'],
-                        'gioiTinh' => $req['gioiTinh'],
-                        'dienThoai' => $req['dienThoai'],
-                        'requirements' => []
-                    ];
-                }
-                $customersMap[$custId]['requirements'][] = [
-                    'id' => $req['id'],
-                    'category' => $req['loaiYeuCau'],
-                    'text' => $req['noiDung'],
-                    'priority' => $req['doUuTien'],
-                    'note' => $req['ghiChu'] ?? ''
+            // Map requirements to customers
+            $customers = [];
+            foreach ($allCustomers as $cust) {
+                $custId = $cust['id'];
+                $customers[$custId] = [
+                    'id' => $custId,
+                    'ten' => $cust['ten'],
+                    'tuoi' => $cust['tuoi'],
+                    'gioiTinh' => $cust['gioiTinh'],
+                    'dienThoai' => $cust['dienThoai'],
+                    'requirements' => []
                 ];
             }
-            $customers = array_values($customersMap);
+            
+            // Fill requirements
+            foreach ($allRequirements as $req) {
+                $custId = $req['khachHang_id'];
+                if (isset($customers[$custId])) {
+                    $customers[$custId]['requirements'][] = [
+                        'id' => $req['id'],
+                        'category' => $req['loaiYeuCau'],
+                        'text' => $req['noiDung'],
+                        'priority' => $req['doUuTien'],
+                        'note' => $req['ghiChu'] ?? ''
+                    ];
+                }
+            }
+            
+            // Convert to array values
+            $customers = array_values($customers);
             
             // Lấy thống kê
             $stats = $this->modelRequirement->getRequirementStats($tourId);
@@ -409,7 +448,7 @@ class HDVController
             // Include view
             include './views/HDV/yeu_cau_dac_biet.php';
         } catch (Exception $e) {
-            echo "<script>alert('Lỗi: " . addslashes($e->getMessage()) . "'); window.history.back();</script>";
+            echo "<script>alert('Đã xảy ra lỗi khi tải trang yêu cầu đặc biệt. Vui lòng thử lại sau.'); window.history.back();</script>";
             exit();
         }
     }
@@ -422,6 +461,11 @@ class HDVController
         try {
             $data = json_decode(file_get_contents('php://input'), true);
             
+            // Inject HDV ID if not present
+            if (!isset($data['nguoiTao_id'])) {
+                $data['nguoiTao_id'] = $_SESSION['hdv_id'] ?? 5;
+            }
+
             if (isset($data['id']) && $data['id'] > 0) {
                 // Update
                 $result = $this->modelRequirement->updateRequirement($data['id'], $data);
@@ -447,12 +491,20 @@ class HDVController
         header('Content-Type: application/json');
         
         try {
-            $data = json_decode(file_get_contents('php://input'), true);
+            // Use $_POST for FormData
+            $data = $_POST;
             
+            // Inject HDV ID if not present
+            if (!isset($data['hdv_id'])) {
+                $data['hdv_id'] = $_SESSION['hdv_id'] ?? 5;
+            }
+
             // Handle file upload if exists
-            if (isset($_FILES['photos']) && $_FILES['photos']['error'][0] === UPLOAD_ERR_OK) {
+            if (isset($_FILES['photos'])) {
                 $uploadedPhotos = $this->uploadMultiplePhotos($_FILES['photos'], 'uploads/tour_diary/');
-                $data['anhMinhHoa'] = implode(',', $uploadedPhotos);
+                if (!empty($uploadedPhotos)) {
+                    $data['anhMinhHoa'] = implode(',', $uploadedPhotos);
+                }
             }
             
             if (isset($data['id']) && $data['id'] > 0) {
@@ -477,14 +529,28 @@ class HDVController
             // Lấy thông tin tour
             $tour = $this->modelTourDetail->getTourInfo($tourId);
             $tour_id = $tourId;
+            $hdvId = $_SESSION['hdv_id'] ?? 5;
             
             // Lấy danh sách đánh giá trước đó (nếu có)
-            $previousReviews = $this->modelReview->getReviewsByTour($tourId, 'hdv');
+            $allReviews = $this->modelReview->getReviewsByTour($tourId, 'hdv');
+            
+            // Find review by current HDV
+            $currentReview = null;
+            $serviceProviderReviews = [];
+            
+            foreach ($allReviews as $review) {
+                if ($review['hdv_id'] == $hdvId) {
+                    $currentReview = $review;
+                    // Get service provider reviews
+                    $serviceProviderReviews = $this->modelReview->getServiceProviderReviews($review['id']);
+                    break; 
+                }
+            }
             
             // Include view
             include './views/HDV/danh_gia_tour.php';
         } catch (Exception $e) {
-            echo "<script>alert('Lỗi: " . addslashes($e->getMessage()) . "'); window.history.back();</script>";
+            echo "<script>alert('Đã xảy ra lỗi khi tải trang đánh giá tour. Vui lòng thử lại sau.'); window.history.back();</script>";
             exit();
         }
     }
@@ -495,12 +561,20 @@ class HDVController
         header('Content-Type: application/json');
         
         try {
-            $data = json_decode(file_get_contents('php://input'), true);
+            // Use $_POST for FormData
+            $data = $_POST;
             
+            // Inject HDV ID if not present
+            if (!isset($data['hdv_id'])) {
+                $data['hdv_id'] = $_SESSION['hdv_id'] ?? 5;
+            }
+
             // Handle file upload if exists
-            if (isset($_FILES['photos']) && $_FILES['photos']['error'][0] === UPLOAD_ERR_OK) {
+            if (isset($_FILES['photos'])) {
                 $uploadedPhotos = $this->uploadMultiplePhotos($_FILES['photos'], 'uploads/reviews/');
-                $data['anhMinhHoa'] = implode(',', $uploadedPhotos);
+                if (!empty($uploadedPhotos)) {
+                    $data['anhMinhHoa'] = implode(',', $uploadedPhotos);
+                }
             }
             
             // Lưu đánh giá chính
@@ -516,14 +590,23 @@ class HDVController
             
             if ($result && $reviewId) {
                 // Lưu đánh giá nhà cung cấp
-                if (isset($data['serviceProviders']) && is_array($data['serviceProviders'])) {
-                    // Xóa đánh giá NCC cũ
-                    $this->modelReview->deleteAllServiceProviderReviews($reviewId);
+                // Note: When using FormData, arrays might come as 'serviceProviders' => [['key'=>'val'], ...]
+                // or we might need to decode if sent as JSON string in a field
+                if (isset($data['serviceProviders'])) {
+                    $providers = $data['serviceProviders'];
+                    if (is_string($providers)) {
+                        $providers = json_decode($providers, true);
+                    }
                     
-                    // Thêm mới
-                    foreach ($data['serviceProviders'] as $provider) {
-                        if (!empty($provider['tenNCC'])) {
-                            $this->modelReview->addServiceProviderReview($reviewId, $provider);
+                    if (is_array($providers)) {
+                        // Xóa đánh giá NCC cũ
+                        $this->modelReview->deleteAllServiceProviderReviews($reviewId);
+                        
+                        // Thêm mới
+                        foreach ($providers as $provider) {
+                            if (!empty($provider['tenNCC'])) {
+                                $this->modelReview->addServiceProviderReview($reviewId, $provider);
+                            }
                         }
                     }
                 }
@@ -555,7 +638,7 @@ class HDVController
             // Include view
             include './views/HDV/lich_lam_viec.php';
         } catch (Exception $e) {
-            echo "<script>alert('Lỗi: " . addslashes($e->getMessage()) . "'); window.history.back();</script>";
+            echo "<script>alert('Đã xảy ra lỗi khi tải lịch làm việc. Vui lòng thử lại sau.'); window.history.back();</script>";
             exit();
         }
     }

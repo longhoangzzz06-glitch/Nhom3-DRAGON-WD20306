@@ -145,97 +145,170 @@ class ReviewModel
     // Lấy danh sách đánh giá theo tour
     public function getReviewsByTour($tourId, $loai = null)
     {
-        $sql = "SELECT 
-                    dg.*,
-                    kh.ten as khachHang_ten,
-                    hdv.hoTen as hdv_ten
-                FROM khach_hang_danh_gia dg
-                LEFT JOIN khach_hang kh ON dg.khachHang_id = kh.id
-                LEFT JOIN hdv ON dg.hdv_id = hdv.id
-                WHERE dg.tour_id = :tour_id";
-        
-        if ($loai) {
-            $sql .= " AND dg.loai = :loai";
+        if ($loai === 'hdv') {
+            // Lấy từ bảng hdv_danh_gia
+            $sql = "SELECT 
+                        dg.*,
+                        hdv.hoTen as hdv_ten
+                    FROM hdv_danh_gia dg
+                    LEFT JOIN hdv ON dg.hdv_id = hdv.id
+                    WHERE dg.tour_id = :tour_id
+                    ORDER BY dg.ngayTao DESC";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute(['tour_id' => $tourId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            // Lấy từ bảng khach_hang_danh_gia (mặc định)
+            $sql = "SELECT 
+                        dg.*,
+                        kh.ten as khachHang_ten
+                    FROM khach_hang_danh_gia dg
+                    LEFT JOIN khach_hang kh ON dg.khachHang_id = kh.id
+                    WHERE dg.tour_id = :tour_id
+                    ORDER BY dg.tgTao DESC";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute(['tour_id' => $tourId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
-        
-        $sql .= " ORDER BY dg.tgTao DESC";
-        
-        $stmt = $this->conn->prepare($sql);
-        $params = ['tour_id' => $tourId];
-        if ($loai) $params['loai'] = $loai;
-        
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Thêm đánh giá mới (HDV hoặc khách hàng)
     public function addReview($data)
     {
-        $sql = "INSERT INTO khach_hang_danh_gia 
-                (tour_id, khachHang_id, hdv_id, diem, danhGia_anToan, danhGia_haiLong, 
-                 binhLuan, diemNoiBat, vanDe, anhMinhHoa, loai, trangThai, tgTao) 
-                VALUES 
-                (:tour_id, :khachHang_id, :hdv_id, :diem, :danhGia_anToan, :danhGia_haiLong,
-                 :binhLuan, :diemNoiBat, :vanDe, :anhMinhHoa, :loai, :trangThai, NOW())";
+        // Set timezone Việt Nam
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
+        $now = date('Y-m-d H:i:s');
+
+        $loai = $data['loai'] ?? 'khach_hang';
         
-        $stmt = $this->conn->prepare($sql);
-        $result = $stmt->execute([
-            'tour_id' => $data['tour_id'],
-            'khachHang_id' => $data['khachHang_id'] ?? null,
-            'hdv_id' => $data['hdv_id'] ?? null,
-            'diem' => $data['diem'] ?? 0,
-            'danhGia_anToan' => $data['danhGia_anToan'] ?? null,
-            'danhGia_haiLong' => $data['danhGia_haiLong'] ?? null,
-            'binhLuan' => $data['binhLuan'] ?? '',
-            'diemNoiBat' => $data['diemNoiBat'] ?? '',
-            'vanDe' => $data['vanDe'] ?? '',
-            'anhMinhHoa' => $data['anhMinhHoa'] ?? '',
-            'loai' => $data['loai'] ?? 'khach_hang',
-            'trangThai' => $data['trangThai'] ?? 'draft'
-        ]);
-        
-        return $result ? $this->conn->lastInsertId() : false;
+        if ($loai === 'hdv') {
+            // Thêm vào bảng hdv_danh_gia
+            $sql = "INSERT INTO hdv_danh_gia 
+                    (tour_id, hdv_id, diem, danhGia_anToan, danhGia_haiLong, 
+                     binhLuan, diemNoiBat, vanDe, anhMinhHoa, trangThai, ngayTao) 
+                    VALUES 
+                    (:tour_id, :hdv_id, :diem, :danhGia_anToan, :danhGia_haiLong,
+                     :binhLuan, :diemNoiBat, :vanDe, :anhMinhHoa, :trangThai, :ngayTao)";
+            
+            $stmt = $this->conn->prepare($sql);
+            $params = [
+                'tour_id' => $data['tour_id'],
+                'hdv_id' => $data['hdv_id'],
+                'diem' => $data['diem'] ?? 0,
+                'danhGia_anToan' => $data['danhGia_anToan'] ?? 0,
+                'danhGia_haiLong' => $data['danhGia_haiLong'] ?? 0,
+                'binhLuan' => $data['binhLuan'] ?? '',
+                'diemNoiBat' => $data['diemNoiBat'] ?? '',
+                'vanDe' => $data['vanDe'] ?? '',
+                'anhMinhHoa' => $data['anhMinhHoa'] ?? '',
+                'trangThai' => $data['trangThai'] ?? 'draft',
+                'ngayTao' => $now
+            ];
+            
+            if ($stmt->execute($params)) {
+                return $this->conn->lastInsertId();
+            } else {
+                $error = $stmt->errorInfo();
+                throw new Exception("Lỗi Database (Add HDV Review): " . $error[2]);
+            }
+        } else {
+            // Thêm vào bảng khach_hang_danh_gia
+            $sql = "INSERT INTO khach_hang_danh_gia 
+                    (tour_id, khachHang_id, diem, binhLuan, tgTao) 
+                    VALUES 
+                    (:tour_id, :khachHang_id, :diem, :binhLuan, :tgTao)";
+            
+            $stmt = $this->conn->prepare($sql);
+            $params = [
+                'tour_id' => $data['tour_id'],
+                'khachHang_id' => $data['khachHang_id'],
+                'diem' => $data['diem'] ?? 0,
+                'binhLuan' => $data['binhLuan'] ?? '',
+                'tgTao' => $now
+            ];
+
+            if ($stmt->execute($params)) {
+                return $this->conn->lastInsertId();
+            } else {
+                $error = $stmt->errorInfo();
+                throw new Exception("Lỗi Database (Add Customer Review): " . $error[2]);
+            }
+        }
     }
 
     // Cập nhật đánh giá
     public function updateReview($id, $data)
     {
-        $sql = "UPDATE khach_hang_danh_gia 
-                SET diem = :diem,
-                    danhGia_anToan = :danhGia_anToan,
-                    danhGia_haiLong = :danhGia_haiLong,
-                    binhLuan = :binhLuan,
-                    diemNoiBat = :diemNoiBat,
-                    vanDe = :vanDe,
-                    anhMinhHoa = :anhMinhHoa,
-                    trangThai = :trangThai
-                WHERE id = :id";
+        $loai = $data['loai'] ?? 'khach_hang';
         
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([
-            'diem' => $data['diem'],
-            'danhGia_anToan' => $data['danhGia_anToan'],
-            'danhGia_haiLong' => $data['danhGia_haiLong'],
-            'binhLuan' => $data['binhLuan'],
-            'diemNoiBat' => $data['diemNoiBat'],
-            'vanDe' => $data['vanDe'],
-            'anhMinhHoa' => $data['anhMinhHoa'] ?? '',
-            'trangThai' => $data['trangThai'],
-            'id' => $id
-        ]);
+        if ($loai === 'hdv') {
+            $fields = [
+                'diem' => $data['diem'],
+                'danhGia_anToan' => $data['danhGia_anToan'],
+                'danhGia_haiLong' => $data['danhGia_haiLong'],
+                'binhLuan' => $data['binhLuan'],
+                'diemNoiBat' => $data['diemNoiBat'],
+                'vanDe' => $data['vanDe'],
+                'trangThai' => $data['trangThai'],
+                'id' => $id
+            ];
+            
+            $sql = "UPDATE hdv_danh_gia 
+                    SET diem = :diem,
+                        danhGia_anToan = :danhGia_anToan,
+                        danhGia_haiLong = :danhGia_haiLong,
+                        binhLuan = :binhLuan,
+                        diemNoiBat = :diemNoiBat,
+                        vanDe = :vanDe,
+                        trangThai = :trangThai";
+            
+            if (isset($data['anhMinhHoa'])) {
+                $sql .= ", anhMinhHoa = :anhMinhHoa";
+                $fields['anhMinhHoa'] = $data['anhMinhHoa'];
+            }
+            
+            $sql .= " WHERE id = :id";
+            
+            $stmt = $this->conn->prepare($sql);
+            
+            if ($stmt->execute($fields)) {
+                return true;
+            } else {
+                $error = $stmt->errorInfo();
+                throw new Exception("Lỗi Database (Update HDV Review): " . $error[2]);
+            }
+        } else {
+            // Update customer review (simplified)
+            $sql = "UPDATE khach_hang_danh_gia SET diem = :diem, binhLuan = :binhLuan WHERE id = :id";
+            $stmt = $this->conn->prepare($sql);
+            return $stmt->execute([
+                'diem' => $data['diem'],
+                'binhLuan' => $data['binhLuan'],
+                'id' => $id
+            ]);
+        }
     }
 
     // Lấy chi tiết đánh giá
-    public function getReviewById($id)
+    public function getReviewById($id, $loai = 'khach_hang')
     {
-        $sql = "SELECT 
-                    dg.*,
-                    kh.ten as khachHang_ten,
-                    hdv.hoTen as hdv_ten
-                FROM khach_hang_danh_gia dg
-                LEFT JOIN khach_hang kh ON dg.khachHang_id = kh.id
-                LEFT JOIN hdv ON dg.hdv_id = hdv.id
-                WHERE dg.id = :id";
+        if ($loai === 'hdv') {
+            $sql = "SELECT 
+                        dg.*,
+                        hdv.hoTen as hdv_ten
+                    FROM hdv_danh_gia dg
+                    LEFT JOIN hdv ON dg.hdv_id = hdv.id
+                    WHERE dg.id = :id";
+        } else {
+            $sql = "SELECT 
+                        dg.*,
+                        kh.ten as khachHang_ten
+                    FROM khach_hang_danh_gia dg
+                    LEFT JOIN khach_hang kh ON dg.khachHang_id = kh.id
+                    WHERE dg.id = :id";
+        }
         
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(['id' => $id]);
@@ -249,8 +322,9 @@ class ReviewModel
     // Thêm đánh giá nhà cung cấp
     public function addServiceProviderReview($danhGiaId, $data)
     {
+        // Lưu ý: danhGia_id ở đây là hdv_danh_gia_id
         $sql = "INSERT INTO danh_gia_nha_cung_cap 
-                (danhGia_id, loaiNCC, tenNCC, diem, nhanXet) 
+                (hdv_danh_gia_id, loaiNCC, tenNCC, diem, nhanXet) 
                 VALUES 
                 (:danhGia_id, :loaiNCC, :tenNCC, :diem, :nhanXet)";
         
@@ -268,7 +342,7 @@ class ReviewModel
     public function getServiceProviderReviews($danhGiaId)
     {
         $sql = "SELECT * FROM danh_gia_nha_cung_cap 
-                WHERE danhGia_id = :danhGia_id 
+                WHERE hdv_danh_gia_id = :danhGia_id 
                 ORDER BY loaiNCC ASC";
         
         $stmt = $this->conn->prepare($sql);
@@ -305,7 +379,7 @@ class ReviewModel
     // Xóa tất cả đánh giá NCC của một đánh giá tour
     public function deleteAllServiceProviderReviews($danhGiaId)
     {
-        $sql = "DELETE FROM danh_gia_nha_cung_cap WHERE danhGia_id = :danhGia_id";
+        $sql = "DELETE FROM danh_gia_nha_cung_cap WHERE hdv_danh_gia_id = :danhGia_id";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute(['danhGia_id' => $danhGiaId]);
     }

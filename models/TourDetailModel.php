@@ -41,7 +41,7 @@ class TourDetailModel
                     kh.gioiTinh,
                     kh.dienThoai,
                     kh.email,
-                    dhkh.trangThai_checkin,
+                    (SELECT trangThai FROM diem_danh WHERE donHangKhachHang_id = dhkh.id ORDER BY tgDiemDanh DESC LIMIT 1) as trangThai_checkin,
                     dhkh.soPhong,
                     dhkh.ghiChuDB
                 FROM don_hang dh

@@ -234,6 +234,38 @@
       align-items: center;
       gap: 10px;
     }
+    .btn-reset {
+      padding: 10px 20px;
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s;
+    }
+    .btn-reset:hover {
+      background: #5a6268;
+    }
+    .btn-add-item {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.3s;
+    }
+    .btn-add-item:hover {
+      background: #0056b3;
+    }
     .summary-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -257,6 +289,39 @@
       color: #666;
       text-transform: uppercase;
     }
+    .hidden-by-category, .hidden-by-search {
+      display: none !important;
+    }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .btn-cancel {
+      padding: 10px 20px;
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-cancel:hover {
+      background: #5a6268;
+    }
+    .btn-submit {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-submit:hover {
+      background: #0056b3;
+    }
   </style>
 </head>
 <body>
@@ -270,15 +335,12 @@
 
     <!-- Search section -->
     <div class="search-section">
-      <div class="search-group">
-        <input type="text" id="search-customer" placeholder="Tìm kiếm khách hàng..." onkeyup="searchCustomer()">
-      </div>
       <button class="btn-reset" onclick="window.location.href='?act=hdv-chi-tiet-tour&id=<?= $_GET['id'] ?? 2 ?>'">
         <i class="fas fa-arrow-left"></i> Quay lại
       </button>
-      <button class="btn-add-item" onclick="openAddModal()">
-        <i class="fas fa-plus"></i> Thêm yêu cầu mới
-      </button>
+      <div class="search-group">
+        <input type="text" id="search-customer" placeholder="Tìm kiếm khách hàng..." onkeyup="searchCustomer()">
+      </div>
     </div>
 
     <?php
@@ -300,6 +362,9 @@
       }
     }
     ?>
+    <script>
+      const customersData = <?= json_encode($customers) ?>;
+    </script>
 
     <!-- Tour Info -->
     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -309,10 +374,6 @@
 
     <!-- Summary Cards -->
     <div class="summary-cards">
-      <div class="summary-card" style="border-top: 4px solid #007bff;">
-        <div class="summary-number" style="color: #007bff;"><?= count($customers) ?></div>
-        <div class="summary-label">Khách có yêu cầu</div>
-      </div>
       <div class="summary-card" style="border-top: 4px solid #dc3545;">
         <div class="summary-number" style="color: #dc3545;"><?php 
           $criticalCount = 0;
@@ -394,16 +455,24 @@
           <div class="requirement-list">
             <?php foreach ($customer['requirements'] as $req): ?>
             <div class="requirement-item <?= $req['priority'] ?>" data-category="<?= $req['category'] ?>">
-              <span class="requirement-category cat-<?= $req['category'] ?>">
-                <?php
-                $icons = ['food' => 'utensils', 'medical' => 'heart-pulse', 'mobility' => 'wheelchair', 'other' => 'info-circle'];
-                $labels = ['food' => 'Ăn uống', 'medical' => 'Y tế', 'mobility' => 'Di chuyển', 'other' => 'Khác'];
-                ?>
-                <i class="fas fa-<?= $icons[$req['category']] ?>"></i> <?= $labels[$req['category']] ?>
-              </span>
-              <?php if ($req['priority'] === 'critical'): ?>
-              <span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-left: 5px;">QUAN TRỌNG</span>
-              <?php endif; ?>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <span class="requirement-category cat-<?= $req['category'] ?>">
+                    <?php
+                    $icons = ['food' => 'utensils', 'medical' => 'heart-pulse', 'mobility' => 'wheelchair', 'other' => 'info-circle'];
+                    $labels = ['food' => 'Ăn uống', 'medical' => 'Y tế', 'mobility' => 'Di chuyển', 'other' => 'Khác'];
+                    ?>
+                    <i class="fas fa-<?= $icons[$req['category']] ?>"></i> <?= $labels[$req['category']] ?>
+                  </span>
+                  <?php if ($req['priority'] === 'critical'): ?>
+                  <span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-left: 5px;">QUAN TRỌNG</span>
+                  <?php endif; ?>
+                </div>
+                <div class="req-actions">
+                  <i class="fas fa-edit" style="cursor:pointer; color:#007bff; margin-right:8px;" onclick="editRequirement(<?= $req['id'] ?>, <?= $customer['id'] ?>)"></i>
+                  <i class="fas fa-trash" style="cursor:pointer; color:#dc3545;" onclick="deleteRequirement(<?= $req['id'] ?>)"></i>
+                </div>
+              </div>
               <div class="requirement-text"><?= htmlspecialchars($req['text']) ?></div>
               <?php if (!empty($req['note'])): ?>
               <div class="requirement-note">
@@ -415,11 +484,8 @@
           </div>
 
           <div class="action-buttons">
-            <button class="btn-action btn-edit" onclick="editRequirements(<?= $customer['id'] ?>)">
-              <i class="fas fa-edit"></i> Chỉnh sửa
-            </button>
             <button class="btn-action btn-add-note" onclick="addNote(<?= $customer['id'] ?>)">
-              <i class="fas fa-plus"></i> Thêm ghi chú
+              <i class="fas fa-plus"></i> Thêm yêu cầu
             </button>
           </div>
         </div>
@@ -438,6 +504,7 @@
       <span class="close-modal" onclick="closeModal()">&times;</span>
     </div>
     <form id="requirementForm" onsubmit="saveRequirement(event)">
+      <input type="hidden" id="requirement-id" value="">
       <div class="form-group">
         <label>Khách hàng:</label>
         <select id="customer-select" required>
@@ -491,20 +558,58 @@
 
 <script>
 function filterCategory(category) {
-  // Update active tab
-  document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
-  event.target.closest('.category-tab').classList.add('active');
+  // Update active tab only if triggered by user interaction (click)
+  // Check if event exists and is a click event on an element
+  if (typeof event !== 'undefined' && event && event.type === 'click' && event.target && event.target.closest) {
+    const tab = event.target.closest('.category-tab');
+    if (tab) {
+      document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    }
+  }
 
-  // Filter requirements
-  const items = document.querySelectorAll('.requirement-item');
-  items.forEach(item => {
-    if (category === 'all' || item.dataset.category === category) {
-      item.style.display = 'block';
+  const cards = document.querySelectorAll('.customer-card');
+  const cardsArray = Array.from(cards);
+  const container = document.getElementById('customer-list');
+
+  cardsArray.forEach(card => {
+    const items = card.querySelectorAll('.requirement-item');
+    let visibleCount = 0;
+
+    items.forEach(item => {
+      if (category === 'all' || item.dataset.category === category) {
+        item.style.display = 'block';
+        visibleCount++;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    // Store count for sorting
+    card.dataset.visibleCount = visibleCount;
+
+    // Logic to hide card if no requirements for this category
+    // "filter theo các category khác 'Tất cả' cần lọc bỏ các thằng 0 yêu cầu"
+    if (category !== 'all' && visibleCount === 0) {
+      card.classList.add('hidden-by-category');
     } else {
-      item.style.display = 'none';
+      card.classList.remove('hidden-by-category');
     }
   });
+
+  // Sort cards by visible count descending
+  cardsArray.sort((a, b) => {
+    return parseInt(b.dataset.visibleCount) - parseInt(a.dataset.visibleCount);
+  });
+
+  // Re-append in new order
+  cardsArray.forEach(card => container.appendChild(card));
 }
+
+// Initialize view with sorting
+document.addEventListener('DOMContentLoaded', function() {
+  filterCategory('all');
+});
 
 function searchCustomer() {
   const query = document.getElementById('search-customer').value.toLowerCase();
@@ -513,16 +618,26 @@ function searchCustomer() {
   cards.forEach(card => {
     const name = card.dataset.customer;
     if (name.includes(query)) {
-      card.style.display = 'block';
+      card.classList.remove('hidden-by-search');
     } else {
-      card.style.display = 'none';
+      card.classList.add('hidden-by-search');
     }
   });
 }
 
-function openAddModal() {
+function openAddModal(customerId = null) {
   document.getElementById('modal-title').textContent = 'Thêm yêu cầu đặc biệt';
+  document.getElementById('requirement-id').value = '';
   document.getElementById('requirementForm').reset();
+  
+  const customerSelect = document.getElementById('customer-select');
+  if (customerId) {
+    customerSelect.value = customerId;
+    customerSelect.disabled = true; // Disable select
+  } else {
+    customerSelect.disabled = false;
+  }
+  
   document.getElementById('requirementModal').classList.add('active');
 }
 
@@ -530,21 +645,99 @@ function closeModal() {
   document.getElementById('requirementModal').classList.remove('active');
 }
 
-function editRequirements(customerId) {
-  alert('Chỉnh sửa yêu cầu của khách #' + customerId);
-  // TODO: Load and edit
+function editRequirement(reqId, customerId) {
+  const customer = customersData.find(c => c.id == customerId);
+  if (!customer) return;
+  
+  const req = customer.requirements.find(r => r.id == reqId);
+  if (!req) return;
+  
+  document.getElementById('modal-title').textContent = 'Cập nhật yêu cầu';
+  document.getElementById('requirement-id').value = req.id;
+  
+  const customerSelect = document.getElementById('customer-select');
+  customerSelect.value = customerId;
+  customerSelect.disabled = true; // Disable select
+  
+  document.getElementById('requirement-category').value = req.category;
+  document.getElementById('requirement-priority').value = req.priority;
+  document.getElementById('requirement-text').value = req.text;
+  document.getElementById('requirement-note').value = req.note || '';
+  
+  document.getElementById('requirementModal').classList.add('active');
+}
+
+function deleteRequirement(reqId) {
+  if (confirm('Bạn có chắc muốn xóa yêu cầu này?')) {
+    fetch('?act=hdv-delete-requirement', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: reqId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Đã xóa yêu cầu');
+        location.reload();
+      } else {
+        alert('Lỗi: ' + (data.message || 'Không thể xóa'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Đã xảy ra lỗi khi xóa');
+    });
+  }
 }
 
 function addNote(customerId) {
-  alert('Thêm ghi chú cho khách #' + customerId);
-  // TODO: Implement
+  openAddModal(customerId);
 }
 
 function saveRequirement(event) {
   event.preventDefault();
-  alert('Đã lưu yêu cầu đặc biệt!');
-  closeModal();
-  // TODO: Send to backend
+  
+  const id = document.getElementById('requirement-id').value;
+  const customerId = document.getElementById('customer-select').value;
+  const category = document.getElementById('requirement-category').value;
+  const priority = document.getElementById('requirement-priority').value;
+  const text = document.getElementById('requirement-text').value;
+  const note = document.getElementById('requirement-note').value;
+  
+  if (!customerId) {
+    alert('Vui lòng chọn khách hàng');
+    return;
+  }
+  
+  const data = {
+    id: id,
+    khachHang_id: customerId,
+    tour_id: <?= $tour['id'] ?>,
+    loaiYeuCau: category,
+    doUuTien: priority,
+    noiDung: text,
+    ghiChu: note,
+    trangThai: 'active'
+  };
+  
+  fetch('?act=hdv-save-requirement', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Đã lưu yêu cầu thành công!');
+      location.reload();
+    } else {
+      alert('Lỗi: ' + (data.message || 'Không thể lưu'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Đã xảy ra lỗi khi lưu');
+  });
 }
 
 // Close modal when clicking outside

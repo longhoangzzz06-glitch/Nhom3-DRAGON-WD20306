@@ -214,36 +214,47 @@
     .btn-save-draft:hover {
       background: #5a6268;
     }
-    .previous-reviews {
-      background: white;
-      padding: 25px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-top: 30px;
+    
+    /* Modal Styles */
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 1000; 
+      left: 0;
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.5); 
     }
-    .review-item {
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto; 
       padding: 20px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid #888;
+      width: 80%; 
+      max-width: 800px;
       border-radius: 8px;
-      margin-bottom: 15px;
     }
-    .review-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #f0f0f0;
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
     }
-    .review-date {
-      color: #666;
-      font-size: 14px;
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
     }
-    .overall-rating {
-      background: #007bff;
-      color: white;
-      padding: 8px 15px;
-      border-radius: 20px;
-      font-weight: 600;
+    .review-history-item {
+        border-bottom: 1px solid #eee;
+        padding: 15px 0;
+    }
+    .review-history-item:last-child {
+        border-bottom: none;
     }
   </style>
 </head>
@@ -258,18 +269,13 @@
 
     <!-- Search section -->
     <div class="search-section">
-      <button class="btn-reset" onclick="window.location.href='?act=hdv-chi-tiet-tour&id=<?= $_GET['id'] ?? 2 ?>'">
+      <button class="btn-reset" onclick="window.location.href='?act=hdv-chi-tiet-tour&id=<?= $_GET['id'] ?? 0 ?>'">
         <i class="fas fa-arrow-left"></i> Quay lại
       </button>
-      <button class="btn-advanced-search" onclick="viewPreviousReviews()">
+      <button class="btn-advanced-search" onclick="openModal()">
         <i class="fas fa-history"></i> Xem phản hồi trước đây
       </button>
     </div>
-
-    <?php
-    // Data from controller: $tour
-    // No mock data - all data fetched from database
-    ?>
 
     <!-- Tour Info -->
     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -279,44 +285,48 @@
 
     <div class="main-wrapper">
       <form id="reviewForm" onsubmit="submitReview(event)">
+        <?php if ($currentReview): ?>
+            <input type="hidden" name="id" value="<?= $currentReview['id'] ?>">
+        <?php endif; ?>
+
         <!-- Overall Rating -->
         <div class="rating-section">
           <h3><i class="fas fa-star"></i> Đánh giá tổng quan</h3>
           
           <div class="rating-item">
             <label class="rating-label">Chất lượng tour tổng thể:</label>
-            <div class="star-rating" data-rating="overall">
+            <div class="star-rating" data-rating="overall" data-initial="<?= $currentReview['diem'] ?? 0 ?>">
               <span class="star" data-value="1">★</span>
               <span class="star" data-value="2">★</span>
               <span class="star" data-value="3">★</span>
               <span class="star" data-value="4">★</span>
               <span class="star" data-value="5">★</span>
             </div>
-            <span class="rating-value" id="overall-value">0/5</span>
+            <span class="rating-value" id="overall-value"><?= $currentReview['diem'] ?? 0 ?>/5</span>
           </div>
 
           <div class="rating-item">
             <label class="rating-label">Mức độ hài lòng của khách hàng:</label>
-            <div class="star-rating" data-rating="customer-satisfaction">
+            <div class="star-rating" data-rating="customer-satisfaction" data-initial="<?= $currentReview['danhGia_haiLong'] ?? 0 ?>">
               <span class="star" data-value="1">★</span>
               <span class="star" data-value="2">★</span>
               <span class="star" data-value="3">★</span>
               <span class="star" data-value="4">★</span>
               <span class="star" data-value="5">★</span>
             </div>
-            <span class="rating-value" id="customer-satisfaction-value">0/5</span>
+            <span class="rating-value" id="customer-satisfaction-value"><?= $currentReview['danhGia_haiLong'] ?? 0 ?>/5</span>
           </div>
 
           <div class="rating-item">
             <label class="rating-label">Tình trạng an toàn:</label>
-            <div class="star-rating" data-rating="safety">
+            <div class="star-rating" data-rating="safety" data-initial="<?= $currentReview['danhGia_anToan'] ?? 0 ?>">
               <span class="star" data-value="1">★</span>
               <span class="star" data-value="2">★</span>
               <span class="star" data-value="3">★</span>
               <span class="star" data-value="4">★</span>
               <span class="star" data-value="5">★</span>
             </div>
-            <span class="rating-value" id="safety-value">0/5</span>
+            <span class="rating-value" id="safety-value"><?= $currentReview['danhGia_anToan'] ?? 0 ?>/5</span>
           </div>
         </div>
 
@@ -325,111 +335,71 @@
           <h3><i class="fas fa-building"></i> Đánh giá nhà cung cấp dịch vụ</h3>
           
           <div class="service-grid">
-            <!-- Hotel -->
-            <div class="service-card">
-              <h4><i class="fas fa-hotel"></i> Khách sạn</h4>
+            <?php 
+            $services = [
+                'hotel' => ['icon' => 'fa-hotel', 'label' => 'Khách sạn'],
+                'restaurant' => ['icon' => 'fa-utensils', 'label' => 'Nhà hàng'],
+                'transport' => ['icon' => 'fa-bus', 'label' => 'Vận chuyển'],
+                'local_guide' => ['icon' => 'fa-user-tie', 'label' => 'Hướng dẫn địa phương']
+            ];
+            
+            foreach ($services as $key => $info): 
+                $svcData = null;
+                foreach ($serviceProviderReviews as $spr) {
+                    if ($spr['loaiNCC'] == $key) {
+                        $svcData = $spr;
+                        break;
+                    }
+                }
+            ?>
+            <div class="service-card" data-type="<?= $key ?>">
+              <h4><i class="fas <?= $info['icon'] ?>"></i> <?= $info['label'] ?></h4>
               <div class="service-detail">
-                <label>Tên khách sạn:</label>
-                <input type="text" placeholder="VD: Grand Palace Hotel" value="Grand Palace Hotel Bangkok">
+                <label>Tên đơn vị:</label>
+                <input type="text" placeholder="Nhập tên đơn vị..." value="<?= htmlspecialchars($svcData['tenNCC'] ?? '') ?>">
               </div>
               <div class="service-detail">
                 <label>Đánh giá:</label>
                 <select>
                   <option value="">-- Chọn --</option>
-                  <option value="5">⭐⭐⭐⭐⭐ Rất tốt</option>
-                  <option value="4" selected>⭐⭐⭐⭐ Tốt</option>
-                  <option value="3">⭐⭐⭐ Trung bình</option>
-                  <option value="2">⭐⭐ Kém</option>
-                  <option value="1">⭐ Rất kém</option>
+                  <option value="5" <?= ($svcData['diem'] ?? 0) == 5 ? 'selected' : '' ?>>⭐⭐⭐⭐⭐ Rất tốt</option>
+                  <option value="4" <?= ($svcData['diem'] ?? 0) == 4 ? 'selected' : '' ?>>⭐⭐⭐⭐ Tốt</option>
+                  <option value="3" <?= ($svcData['diem'] ?? 0) == 3 ? 'selected' : '' ?>>⭐⭐⭐ Trung bình</option>
+                  <option value="2" <?= ($svcData['diem'] ?? 0) == 2 ? 'selected' : '' ?>>⭐⭐ Kém</option>
+                  <option value="1" <?= ($svcData['diem'] ?? 0) == 1 ? 'selected' : '' ?>>⭐ Rất kém</option>
                 </select>
               </div>
               <div class="service-detail">
                 <label>Nhận xét:</label>
-                <textarea class="comment-box" placeholder="Chất lượng phòng, vệ sinh, phục vụ..."></textarea>
+                <textarea class="comment-box" placeholder="Nhận xét chi tiết..."><?= htmlspecialchars($svcData['nhanXet'] ?? '') ?></textarea>
               </div>
             </div>
-
-            <!-- Restaurant -->
-            <div class="service-card">
-              <h4><i class="fas fa-utensils"></i> Nhà hàng</h4>
-              <div class="service-detail">
-                <label>Tên nhà hàng:</label>
-                <input type="text" placeholder="VD: Thai Cuisine Restaurant">
-              </div>
-              <div class="service-detail">
-                <label>Đánh giá:</label>
-                <select>
-                  <option value="">-- Chọn --</option>
-                  <option value="5">⭐⭐⭐⭐⭐ Rất tốt</option>
-                  <option value="4">⭐⭐⭐⭐ Tốt</option>
-                  <option value="3" selected>⭐⭐⭐ Trung bình</option>
-                  <option value="2">⭐⭐ Kém</option>
-                  <option value="1">⭐ Rất kém</option>
-                </select>
-              </div>
-              <div class="service-detail">
-                <label>Nhận xét:</label>
-                <textarea class="comment-box" placeholder="Chất lượng món ăn, vệ sinh, phục vụ..."></textarea>
-              </div>
-            </div>
-
-            <!-- Transportation -->
-            <div class="service-card">
-              <h4><i class="fas fa-bus"></i> Vận chuyển</h4>
-              <div class="service-detail">
-                <label>Đơn vị vận chuyển:</label>
-                <input type="text" placeholder="VD: Bangkok Transport Co.">
-              </div>
-              <div class="service-detail">
-                <label>Đánh giá:</label>
-                <select>
-                  <option value="">-- Chọn --</option>
-                  <option value="5" selected>⭐⭐⭐⭐⭐ Rất tốt</option>
-                  <option value="4">⭐⭐⭐⭐ Tốt</option>
-                  <option value="3">⭐⭐⭐ Trung bình</option>
-                  <option value="2">⭐⭐ Kém</option>
-                  <option value="1">⭐ Rất kém</option>
-                </select>
-              </div>
-              <div class="service-detail">
-                <label>Nhận xét:</label>
-                <textarea class="comment-box" placeholder="Chất lượng xe, tài xế, đúng giờ..."></textarea>
-              </div>
-            </div>
-
-            <!-- Tour Guide Service -->
-            <div class="service-card">
-              <h4><i class="fas fa-user-tie"></i> Hướng dẫn địa phương</h4>
-              <div class="service-detail">
-                <label>Tên HDV địa phương:</label>
-                <input type="text" placeholder="VD: Mr. Somchai">
-              </div>
-              <div class="service-detail">
-                <label>Đánh giá:</label>
-                <select>
-                  <option value="">-- Chọn --</option>
-                  <option value="5">⭐⭐⭐⭐⭐ Rất tốt</option>
-                  <option value="4" selected>⭐⭐⭐⭐ Tốt</option>
-                  <option value="3">⭐⭐⭐ Trung bình</option>
-                  <option value="2">⭐⭐ Kém</option>
-                  <option value="1">⭐ Rất kém</option>
-                </select>
-              </div>
-              <div class="service-detail">
-                <label>Nhận xét:</label>
-                <textarea class="comment-box" placeholder="Kiến thức, thái độ, kỹ năng giao tiếp..."></textarea>
-              </div>
-            </div>
+            <?php endforeach; ?>
           </div>
         </div>
 
         <!-- Highlights -->
         <div class="highlight-section">
           <h3><i class="fas fa-thumbs-up"></i> Điểm nổi bật / Điều tốt</h3>
-          <textarea class="comment-box" placeholder="Những điểm tốt của tour, dịch vụ xuất sắc, trải nghiệm đáng nhớ..."></textarea>
+          <?php
+            $highlights = $currentReview['diemNoiBat'] ?? '';
+            $highlightText = $highlights;
+            $highlightTags = [];
+            
+            if (strpos($highlights, 'Tags: ') !== false) {
+                $parts = explode('Tags: ', $highlights);
+                $highlightText = trim($parts[0]);
+                $tagsStr = trim($parts[1]);
+                if (!empty($tagsStr)) {
+                    $highlightTags = array_map('trim', explode(',', $tagsStr));
+                }
+            }
+          ?>
+          <textarea class="comment-box" placeholder="Những điểm tốt của tour, dịch vụ xuất sắc, trải nghiệm đáng nhớ..."><?= htmlspecialchars($highlightText) ?></textarea>
           <div class="tag-input" id="highlights-tags">
-            <div class="tag">Đúng giờ <span class="remove" onclick="removeTag(this)">×</span></div>
-            <div class="tag">Phục vụ tốt <span class="remove" onclick="removeTag(this)">×</span></div>
+            <?php foreach ($highlightTags as $tag): ?>
+                <div class="tag"><?= htmlspecialchars($tag) ?> <span class="remove" onclick="removeTag(this)">×</span></div>
+            <?php endforeach; ?>
           </div>
           <input type="text" id="highlight-input" placeholder="Thêm tag (Enter để thêm)" 
                  onkeypress="addTag(event, 'highlights-tags')" 
@@ -439,8 +409,25 @@
         <!-- Issues -->
         <div class="issue-section">
           <h3><i class="fas fa-exclamation-triangle"></i> Vấn đề / Cần cải thiện</h3>
-          <textarea class="comment-box" placeholder="Các vấn đề gặp phải, điều cần cải thiện, đề xuất..."></textarea>
+          <?php
+            $issues = $currentReview['vanDe'] ?? '';
+            $issueText = $issues;
+            $issueTags = [];
+            
+            if (strpos($issues, 'Tags: ') !== false) {
+                $parts = explode('Tags: ', $issues);
+                $issueText = trim($parts[0]);
+                $tagsStr = trim($parts[1]);
+                if (!empty($tagsStr)) {
+                    $issueTags = array_map('trim', explode(',', $tagsStr));
+                }
+            }
+          ?>
+          <textarea class="comment-box" placeholder="Các vấn đề gặp phải, điều cần cải thiện, đề xuất..."><?= htmlspecialchars($issueText) ?></textarea>
           <div class="tag-input" id="issues-tags">
+            <?php foreach ($issueTags as $tag): ?>
+                <div class="tag"><?= htmlspecialchars($tag) ?> <span class="remove" onclick="removeTag(this)">×</span></div>
+            <?php endforeach; ?>
           </div>
           <input type="text" id="issue-input" placeholder="Thêm tag (Enter để thêm)" 
                  onkeypress="addTag(event, 'issues-tags')" 
@@ -458,15 +445,23 @@
               <i class="fas fa-plus"></i>
               <input type="file" id="photo-upload" multiple accept="image/*" style="display: none;" onchange="previewPhotos(event)">
             </label>
-            <div id="photo-preview"></div>
+            <div id="photo-preview">
+                <?php if (!empty($currentReview['anhMinhHoa'])): 
+                    $photos = explode(',', $currentReview['anhMinhHoa']);
+                    foreach ($photos as $photo):
+                        if (empty(trim($photo))) continue;
+                ?>
+                    <img src="./uploads/reviews/<?= trim($photo) ?>" class="photo-preview" alt="Review Photo">
+                <?php endforeach; endif; ?>
+            </div>
           </div>
         </div>
 
         <!-- Additional Comments -->
         <div class="rating-section">
           <h3><i class="fas fa-comment-dots"></i> Nhận xét chung & Đề xuất</h3>
-          <textarea class="comment-box" style="min-height: 150px;" 
-                    placeholder="Đánh giá tổng thể về tour, đề xuất cải thiện cho các tour tương lai, kiến nghị với công ty..."></textarea>
+          <textarea id="general-comment" class="comment-box" style="min-height: 150px;" 
+                    placeholder="Đánh giá tổng thể về tour, đề xuất cải thiện cho các tour tương lai, kiến nghị với công ty..."><?= htmlspecialchars($currentReview['binhLuan'] ?? '') ?></textarea>
         </div>
 
         <!-- Form Actions -->
@@ -483,12 +478,63 @@
   </div>
 </div>
 
+<!-- Modal for Previous Reviews -->
+<div id="reviewsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2>Lịch sử đánh giá</h2>
+    <div id="reviewsList">
+        <?php if (empty($allReviews)): ?>
+            <p>Chưa có đánh giá nào.</p>
+        <?php else: ?>
+            <?php foreach ($allReviews as $rev): ?>
+                <div class="review-history-item">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong><?= htmlspecialchars($rev['hdv_ten'] ?? 'HDV') ?></strong>
+                        <span style="color: #666;"><?= date('d/m/Y H:i', strtotime($rev['ngayTao'] ?? $rev['tgTao'])) ?></span>
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <span style="color: #ffc107;">
+                            <?php for($i=0; $i<$rev['diem']; $i++) echo '★'; ?>
+                            <?php for($i=$rev['diem']; $i<5; $i++) echo '☆'; ?>
+                        </span>
+                        (<?= $rev['diem'] ?>/5)
+                    </div>
+                    <p style="margin-top: 5px;"><?= htmlspecialchars($rev['binhLuan']) ?></p>
+                    <span class="badge bg-<?= $rev['trangThai'] == 'submitted' ? 'success' : 'secondary' ?>">
+                        <?= $rev['trangThai'] == 'submitted' ? 'Đã gửi' : 'Nháp' ?>
+                    </span>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+  </div>
+</div>
+
 <script>
+// Modal functions
+function openModal() {
+  document.getElementById('reviewsModal').style.display = "block";
+}
+
+function closeModal() {
+  document.getElementById('reviewsModal').style.display = "none";
+}
+
+window.onclick = function(event) {
+  if (event.target == document.getElementById('reviewsModal')) {
+    closeModal();
+  }
+}
+
 // Star rating functionality
 document.querySelectorAll('.star-rating').forEach(ratingContainer => {
   const stars = ratingContainer.querySelectorAll('.star');
   const ratingType = ratingContainer.dataset.rating;
-  let currentRating = 0;
+  let currentRating = parseInt(ratingContainer.dataset.initial) || 0;
+
+  // Initialize stars
+  updateStars();
 
   stars.forEach(star => {
     star.addEventListener('click', function() {
@@ -547,6 +593,8 @@ function previewPhotos(event) {
   const files = event.target.files;
   const preview = document.getElementById('photo-preview');
   
+  // Keep existing photos if any (optional, currently appending)
+  
   Array.from(files).forEach(file => {
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -583,17 +631,19 @@ function submitReview(event) {
     return;
   }
   
+  const formData = new FormData();
+  
   // Collect service provider reviews
   const serviceProviders = [];
-  document.querySelectorAll('.service-card').forEach((card, index) => {
-    const types = ['hotel', 'restaurant', 'transport', 'local_guide'];
+  document.querySelectorAll('.service-card').forEach((card) => {
+    const type = card.dataset.type;
     const nameInput = card.querySelector('input[type="text"]');
     const ratingSelect = card.querySelector('select');
     const commentTextarea = card.querySelector('textarea');
     
     if (nameInput && nameInput.value.trim()) {
       serviceProviders.push({
-        loaiNCC: types[index],
+        loaiNCC: type,
         tenNCC: nameInput.value.trim(),
         diem: parseInt(ratingSelect.value) || 0,
         nhanXet: commentTextarea.value.trim()
@@ -607,29 +657,39 @@ function submitReview(event) {
   const issueTags = Array.from(document.querySelectorAll('#issues-tags .tag'))
     .map(tag => tag.textContent.replace('×', '').trim());
   
-  // Get all textareas
-  const textareas = document.querySelectorAll('textarea');
-  
-  // Prepare data
-  const reviewData = {
-    tour_id: <?= $tour_id ?>,
-    hdv_id: <?= $_SESSION['hdv_id'] ?? 5 ?>, // TODO: Get from session
-    diem: ratings['overall'] || 0,
-    danhGia_anToan: ratings['safety'] || 0,
-    danhGia_haiLong: ratings['customer-satisfaction'] || 0,
-    binhLuan: textareas[textareas.length - 1].value.trim(), // Additional comments
-    diemNoiBat: textareas[0].value.trim() + (highlightTags.length ? '\nTags: ' + highlightTags.join(', ') : ''),
-    vanDe: textareas[1].value.trim() + (issueTags.length ? '\nTags: ' + issueTags.join(', ') : ''),
-    loai: 'hdv',
-    trangThai: 'submitted',
-    serviceProviders: serviceProviders
-  };
+  const highlightText = document.querySelector('.highlight-section textarea').value.trim();
+  const issueText = document.querySelector('.issue-section textarea').value.trim();
+  const generalComment = document.getElementById('general-comment').value.trim();
+
+  // Append data to FormData
+  const idInput = document.querySelector('input[name="id"]');
+  if (idInput) {
+      formData.append('id', idInput.value);
+  }
+  formData.append('tour_id', <?= $tour_id ?>);
+  formData.append('hdv_id', <?= $_SESSION['hdv_id'] ?? 5 ?>);
+  formData.append('diem', ratings['overall'] || 0);
+  formData.append('danhGia_anToan', ratings['safety'] || 0);
+  formData.append('danhGia_haiLong', ratings['customer-satisfaction'] || 0);
+  formData.append('binhLuan', generalComment);
+  formData.append('diemNoiBat', highlightText + (highlightTags.length ? '\nTags: ' + highlightTags.join(', ') : ''));
+  formData.append('vanDe', issueText + (issueTags.length ? '\nTags: ' + issueTags.join(', ') : ''));
+  formData.append('loai', 'hdv');
+  formData.append('trangThai', 'submitted');
+  formData.append('serviceProviders', JSON.stringify(serviceProviders));
+
+  // Append photos
+  const fileInput = document.getElementById('photo-upload');
+  if (fileInput.files.length > 0) {
+    for (let i = 0; i < fileInput.files.length; i++) {
+      formData.append('photos[]', fileInput.files[i]);
+    }
+  }
   
   // Send to API
-  fetch('?act=api-save-review', {
+  fetch('?act=hdv-save-review', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(reviewData)
+    body: formData
   })
   .then(response => response.json())
   .then(data => {
@@ -646,13 +706,7 @@ function submitReview(event) {
   });
 }
 
-function viewPreviousReviews() {
-  alert('Xem các phản hồi trước đây');
-  // TODO: Show modal with previous reviews
-}
-
 function saveDraft() {
-  // Similar to submitReview but with trangThai = 'draft'
   const ratings = {};
   ['overall', 'customer-satisfaction', 'safety'].forEach(type => {
     const value = document.getElementById(type + '-value').textContent;
@@ -662,16 +716,18 @@ function saveDraft() {
     }
   });
   
+  const formData = new FormData();
+
   const serviceProviders = [];
-  document.querySelectorAll('.service-card').forEach((card, index) => {
-    const types = ['hotel', 'restaurant', 'transport', 'local_guide'];
+  document.querySelectorAll('.service-card').forEach((card) => {
+    const type = card.dataset.type;
     const nameInput = card.querySelector('input[type="text"]');
     const ratingSelect = card.querySelector('select');
     const commentTextarea = card.querySelector('textarea');
     
     if (nameInput && nameInput.value.trim()) {
       serviceProviders.push({
-        loaiNCC: types[index],
+        loaiNCC: type,
         tenNCC: nameInput.value.trim(),
         diem: parseInt(ratingSelect.value) || 0,
         nhanXet: commentTextarea.value.trim()
@@ -684,31 +740,46 @@ function saveDraft() {
   const issueTags = Array.from(document.querySelectorAll('#issues-tags .tag'))
     .map(tag => tag.textContent.replace('×', '').trim());
   
-  const textareas = document.querySelectorAll('textarea');
+  const highlightText = document.querySelector('.highlight-section textarea').value.trim();
+  const issueText = document.querySelector('.issue-section textarea').value.trim();
+  const generalComment = document.getElementById('general-comment').value.trim();
   
-  const reviewData = {
-    tour_id: <?= $tour_id ?>,
-    hdv_id: <?= $_SESSION['hdv_id'] ?? 5 ?>,
-    diem: ratings['overall'] || 0,
-    danhGia_anToan: ratings['safety'] || 0,
-    danhGia_haiLong: ratings['customer-satisfaction'] || 0,
-    binhLuan: textareas[textareas.length - 1].value.trim(),
-    diemNoiBat: textareas[0].value.trim() + (highlightTags.length ? '\nTags: ' + highlightTags.join(', ') : ''),
-    vanDe: textareas[1].value.trim() + (issueTags.length ? '\nTags: ' + issueTags.join(', ') : ''),
-    loai: 'hdv',
-    trangThai: 'draft',
-    serviceProviders: serviceProviders
-  };
+  const idInput = document.querySelector('input[name="id"]');
+  if (idInput) {
+      formData.append('id', idInput.value);
+  }
+  formData.append('tour_id', <?= $tour_id ?>);
+  formData.append('hdv_id', <?= $_SESSION['hdv_id'] ?? 5 ?>);
+  formData.append('diem', ratings['overall'] || 0);
+  formData.append('danhGia_anToan', ratings['safety'] || 0);
+  formData.append('danhGia_haiLong', ratings['customer-satisfaction'] || 0);
+  formData.append('binhLuan', generalComment);
+  formData.append('diemNoiBat', highlightText + (highlightTags.length ? '\nTags: ' + highlightTags.join(', ') : ''));
+  formData.append('vanDe', issueText + (issueTags.length ? '\nTags: ' + issueTags.join(', ') : ''));
+  formData.append('loai', 'hdv');
+  formData.append('trangThai', 'draft');
+  formData.append('serviceProviders', JSON.stringify(serviceProviders));
+
+  // Append photos
+  const fileInput = document.getElementById('photo-upload');
+  if (fileInput.files.length > 0) {
+    for (let i = 0; i < fileInput.files.length; i++) {
+      formData.append('photos[]', fileInput.files[i]);
+    }
+  }
   
-  fetch('?act=api-save-review', {
+  fetch('?act=hdv-save-review', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(reviewData)
+    body: formData
   })
   .then(response => response.json())
   .then(data => {
     if (data.success) {
       alert('Đã lưu nháp thành công!');
+      // Reload to get the ID if it was a new draft
+      if (!idInput) {
+          location.reload();
+      }
     } else {
       alert('Lỗi: ' + (data.message || 'Không thể lưu nháp'));
     }

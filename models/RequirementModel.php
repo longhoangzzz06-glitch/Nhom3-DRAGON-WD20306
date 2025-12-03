@@ -22,7 +22,8 @@ class RequirementModel
                 FROM yeu_cau_dac_biet yc
                 INNER JOIN khach_hang kh ON yc.khachHang_id = kh.id
                 LEFT JOIN hdv ON yc.nguoiTao_id = hdv.id
-                WHERE yc.tour_id = :tour_id";
+                WHERE yc.tour_id = :tour_id
+                AND yc.trangThai = 'active'";
         
         if ($loai) {
             $sql .= " AND yc.loaiYeuCau = :loai";

@@ -254,9 +254,6 @@
     <div class="customer-section">
       <h2>
         <span><i class="fas fa-users"></i> Danh sách khách tham gia (<?= count($customers) ?> người)</span>
-        <button class="btn-add-item" onclick="exportCustomerList()">
-          <i class="fas fa-file-excel"></i> Xuất danh sách
-        </button>
       </h2>
 
       <?php foreach ($customers as $customer): ?>
@@ -274,13 +271,6 @@
             <span><i class="fas fa-bed"></i> Phòng <?= htmlspecialchars($customer['soPhong'] ?? '') ?></span>
             <?php endif; ?>
           </div>
-          <?php if (!empty($customer['ghiChu'])): ?>
-          <div style="margin-top: 5px;">
-            <span class="special-note">
-              <i class="fas fa-info-circle"></i> <?= htmlspecialchars($customer['ghiChu'] ?? '') ?>
-            </span>
-          </div>
-          <?php endif; ?>
         </div>
         <div class="customer-status">
           <span class="badge-checkin <?= $customer['checkin'] ? 'badge-checked' : 'badge-not-checked' ?>">
