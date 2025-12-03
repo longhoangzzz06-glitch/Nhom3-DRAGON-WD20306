@@ -1,0 +1,51 @@
+<?php
+class CongNo
+{
+    private $db;
+    private $bang = "cong_no";
+
+    public function __construct($db)
+    {
+        $this->db = $db;
+    }
+
+    public function layTatCa()
+    {
+        $stmt = $this->db->query("SELECT * FROM {$this->bang} ORDER BY ngay DESC");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function tim($id)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->bang} WHERE id=:id");
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function them($data)
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO {$this->bang} (nha_cung_cap_id, tour_id, sotien, loai, ghi_chu, ngay)
+            VALUES (:nha_cung_cap_id, :tour_id, :sotien, :loai, :ghi_chu, :ngay)
+        ");
+        return $stmt->execute($data);
+    }
+
+    public function capNhat($id, $data)
+    {
+        $data['id'] = $id;
+        $stmt = $this->db->prepare("
+            UPDATE {$this->bang} 
+            SET nha_cung_cap_id=:nha_cung_cap_id, tour_id=:tour_id, sotien=:sotien,
+                loai=:loai, ghi_chu=:ghi_chu, ngay=:ngay
+            WHERE id=:id
+        ");
+        return $stmt->execute($data);
+    }
+
+    public function xoa($id)
+    {
+        $stmt = $this->db->prepare("DELETE FROM {$this->bang} WHERE id=:id");
+        return $stmt->execute(['id' => $id]);
+    }
+}
