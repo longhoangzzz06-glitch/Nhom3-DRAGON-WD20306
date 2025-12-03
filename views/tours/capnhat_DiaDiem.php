@@ -68,15 +68,6 @@
                         <input type="number" id="thuTu" name="thuTu" value="<?php echo $diaDiem['thuTu']; ?>">
                     </div>
 
-                    <div class="form-group">
-                        <label for="trangThai">Trạng thái:</label>
-                        <select id="trangThai" name="trangThai">
-                            <option value="pending" <?php echo ($diaDiem['trangThai'] == 'pending') ? 'selected' : ''; ?>>Chờ duyệt (Pending)</option>
-                            <option value="active" <?php echo ($diaDiem['trangThai'] == 'active') ? 'selected' : ''; ?>>Hoạt động (Active)</option>
-                            <option value="completed" <?php echo ($diaDiem['trangThai'] == 'completed') ? 'selected' : ''; ?>>Hoàn thành (Completed)</option>
-                        </select>
-                    </div>
-
                     <div class="button-group">
                         <button type="submit" class="btn-submit">Cập nhật</button>
                         <button type="button" class="btn-cancel" onclick="window.location.href='index.php?act=quan-ly-dia-diem'">Hủy</button>

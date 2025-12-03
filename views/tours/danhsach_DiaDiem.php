@@ -98,7 +98,7 @@
 
     function getTrangThaiLabel(status) {
         const map = {
-            'pending': 'Chờ duyệt',
+            'pending': 'Chưa Hoàn Thành',
             'active': 'Hoạt động',
             'completed': 'Hoàn thành'
         };

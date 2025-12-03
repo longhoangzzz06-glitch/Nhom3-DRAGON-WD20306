@@ -62,16 +62,6 @@
                     </div>
 
                     <!-- Thứ tự sẽ được tự động tính toán -->
-
-                    <div class="form-group">
-                        <label for="trangThai">Trạng thái:</label>
-                        <select id="trangThai" name="trangThai">
-                            <option value="pending">Chờ duyệt (Pending)</option>
-                            <option value="active">Hoạt động (Active)</option>
-                            <option value="completed">Hoàn thành (Completed)</option>
-                        </select>
-                    </div>
-
                     <div class="button-group">
                         <button type="submit" class="btn-submit">Thêm Địa điểm</button>
                         <button type="button" class="btn-cancel" onclick="window.location.href='index.php?act=quan-ly-dia-diem'">Hủy</button>
