@@ -29,7 +29,7 @@
           <i class="fas fa-redo"></i> Đặt lại
         </button>
         <button class="btn-add-item">
-        <a href="index.php?act=view-them-hdv" style="color: white; text-decoration: none;">
+        <a href="index.php?act=view-them-hdv" style="color: white; text-decoration: none;" title="Thêm hướng dẫn viên">
             <i class="fas fa-plus"></i> Thêm hướng dẫn viên 
         </a>
         </button>
@@ -232,7 +232,7 @@
                 <td>${hdv.email ?? ''}</td>
                 <td>${hdv.trangThai ?? ''}</td>
                 <td class="actions">
-                    <a href="javascript:void(0)" onclick="showDetailModal(${hdv.id})"><i class='fa-solid fa-user'></i></a>
+                    <a href="javascript:void(0)" onclick="showDetailModal(${hdv.id})" ><i class='fa-solid fa-user'></i></a>
                     <a href="index.php?act=view-cap-nhat-hdv&id=${hdv.id}"><i class='fa-solid fa-pen'></i></a>
                     <a href="index.php?act=xoa-hdv&id=${hdv.id}" class="delete" onclick="return xoaHDV('${hdv.id}')"><i class='fa-solid fa-trash'></i></a>
                 </td>
