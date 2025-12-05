@@ -16,27 +16,26 @@
         </div>
 
         <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" 
-                  action="index.php?act=supplier&method=store">
+            <form method="POST" enctype="multipart/form-data" action="index.php?act=them-supplier">
 
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Tên nhà cung cấp *</label>
                     <div class="col-md-9">
-                        <input name="name" required class="form-control" placeholder="VD: Khách sạn Golden Dragon">
+                        <input name="ten" required class="form-control" placeholder="VD: Khách sạn Golden Dragon">
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Loại dịch vụ *</label>
                     <div class="col-md-9">
-                        <input name="service_type" required class="form-control" placeholder="VD: Khách sạn, Nhà hàng, Xe du lịch...">
+                        <input name="loai_dich_vu" required class="form-control" placeholder="VD: Khách sạn, Nhà hàng, Xe du lịch...">
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Điện thoại</label>
                     <div class="col-md-9">
-                        <input name="phone" class="form-control" placeholder="VD: 0988 123 456">
+                        <input name="dien_thoai" class="form-control" placeholder="VD: 0988 123 456">
                     </div>
                 </div>
 
@@ -50,7 +49,7 @@
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Địa chỉ</label>
                     <div class="col-md-9">
-                        <input name="address" class="form-control" placeholder="Địa chỉ cụ thể...">
+                        <input name="dia_chi" class="form-control" placeholder="Địa chỉ cụ thể...">
                     </div>
                 </div>
 
@@ -64,12 +63,12 @@
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Ghi chú</label>
                     <div class="col-md-9">
-                        <textarea name="note" class="form-control" rows="3" placeholder="Ghi chú thêm..."></textarea>
+                        <textarea name="ghi_chu" class="form-control" rows="3" placeholder="Ghi chú thêm..."></textarea>
                     </div>
                 </div>
 
                 <div class="text-end">
-                    <a href="index.php?act=supplier" class="btn btn-secondary">Hủy</a>
+                    <a href="index.php?act=quan-ly-supplier" class="btn btn-secondary">Hủy</a>
                     <button type="submit" class="btn btn-primary px-4">Lưu</button>
                 </div>
 

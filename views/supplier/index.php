@@ -14,9 +14,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="text-primary fw-bold">Danh Sách Nhà Cung Cấp</h3>
-        <a href="index.php?act=supplier&method=create" class="btn btn-success">
-            + Thêm nhà cung cấp
-        </a>
+        <a href="index.php?act=view-them-supplier" class="btn btn-success">+ Thêm nhà cung cấp</a>
     </div>
 
     <!-- Search -->
@@ -60,6 +58,8 @@
                         <th>Dịch vụ</th>
                         <th>SĐT</th>
                         <th>Email</th>
+                        <th>Địa chỉ</th>
+                        <th>Ghi chú</th>
                         <th>Hành động</th>
                     </tr>
                 </thead>
@@ -79,10 +79,12 @@
                                     <?php endif; ?>
                                 </td>
 
-                                <td><?= $s['name'] ?></td>
-                                <td><?= $s['service_type'] ?></td>
-                                <td><?= $s['contact_phone'] ?></td>
-                                <td><?= $s['contact_email'] ?></td>
+                                <td><?= $s['ten']??'' ?></td>
+                                <td><?= $s['loai_dich_vu']??'' ?></td>
+                                <td><?= $s['dien_thoai']??'' ?></td>
+                                <td><?= $s['email']??'' ?></td>
+                                <td><?= $s['dia_chi']??'' ?></td>
+                                <td><?= $s['ghi_chu']??'' ?></td>
 
                                 <td>
                                     <!-- View -->
@@ -94,17 +96,10 @@
                                     </button>
 
                                     <!-- Edit -->
-                                    <a href="index.php?act=supplier&method=edit&id=<?= $s['id'] ?>" 
-                                       class="btn btn-sm btn-warning">
-                                        Sửa
-                                    </a>
+                                    <a href="index.php?act=view-cap-nhat-supplier&id=<?= $s['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
 
                                     <!-- Delete -->
-                                    <a href="index.php?act=supplier&method=delete&id=<?= $s['id'] ?>" 
-                                       class="btn btn-sm btn-danger"
-                                       onclick="return confirm('Xóa nhà cung cấp này?')">
-                                        Xóa
-                                    </a>
+                                    <a href="index.php?act=xoa-supplier&id=<?= $s['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa nhà cung cấp này?')">Xóa</a>
                                 </td>
                             </tr>
 
@@ -120,23 +115,15 @@
 
                                         <div class="modal-body row">
                                             
-                                            <div class="col-md-4">
-                                                <?php if ($s['logo']): ?>
-                                                    <img src="<?= $s['logo'] ?>" 
-                                                         class="img-fluid rounded border">
-                                                <?php else: ?>
-                                                    <p class="text-muted">Không có logo</p>
-                                                <?php endif; ?>
-                                            </div>
 
                                             <div class="col-md-8">
-                                                <p><strong>Tên:</strong> <?= $s['name'] ?></p>
-                                                <p><strong>Dịch vụ:</strong> <?= $s['service_type'] ?></p>
-                                                <p><strong>Điện thoại:</strong> <?= $s['phone'] ?></p>
-                                                <p><strong>Email:</strong> <?= $s['email'] ?></p>
-                                                <p><strong>Địa chỉ:</strong> <?= $s['address'] ?></p>
-                                                <p><strong>Ghi chú:</strong> <?= nl2br($s['note']) ?></p>
-                                                <p><small class="text-muted">Ngày tạo: <?= $s['created_at'] ?></small></p>
+                                                <p><strong>Tên:</strong> <?= $s['ten']??'' ?></p>
+                                                <p><strong>Dịch vụ:</strong> <?= $s['loai_dich_vu']??'' ?></p>
+                                                <p><strong>Điện thoại:</strong> <?= $s['dien_thoai']??'' ?></p>
+                                                <p><strong>Email:</strong> <?= $s['email']??'' ?></p>
+                                                <p><strong>Địa chỉ:</strong> <?= $s['dia_chi']??'' ?></p>
+                                                <p><strong>Ghi chú:</strong> <?= $s['ghi_chu']??'' ?></p>
+                                                <p><small class="text-muted">Ngày tạo: <?= $s['created_at']??'' ?></small></p>
                                             </div>
 
                                         </div>

@@ -27,7 +27,7 @@
                     <label class="col-md-3 col-form-label">Tên nhà cung cấp *</label>
                     <div class="col-md-9">
                         <input name="name" required class="form-control"
-                               value="<?= $supplier['name'] ?>">
+                               value="<?= $supplier['ten'] ?>">
                     </div>
                 </div>
 
@@ -35,7 +35,7 @@
                     <label class="col-md-3 col-form-label">Loại dịch vụ *</label>
                     <div class="col-md-9">
                         <input name="service_type" required class="form-control"
-                               value="<?= $supplier['service_type'] ?>">
+                               value="<?= $supplier['loai_dich_vu'] ?>">
                     </div>
                 </div>
 
@@ -43,7 +43,7 @@
                     <label class="col-md-3 col-form-label">Điện thoại</label>
                     <div class="col-md-9">
                         <input name="phone" class="form-control"
-                               value="<?= $supplier['contact_phone'] ?>">
+                               value="<?= $supplier['dien_thoai'] ?>">
                     </div>
                 </div>
 
@@ -51,7 +51,7 @@
                     <label class="col-md-3 col-form-label">Email</label>
                     <div class="col-md-9">
                         <input type="email" name="email" class="form-control"
-                               value="<?= $supplier['contact_email'] ?>">
+                               value="<?= $supplier['email'] ?>">
                     </div>
                 </div>
 
@@ -59,33 +59,20 @@
                     <label class="col-md-3 col-form-label">Địa chỉ</label>
                     <div class="col-md-9">
                         <input name="address" class="form-control"
-                               value="<?= $supplier['address'] ?>">
-                    </div>
-                </div>
-
-                <!-- Logo -->
-                <div class="row mb-3">
-                    <label class="col-md-3 col-form-label">Logo</label>
-                    <div class="col-md-9">
-                        <input type="file" name="logo" class="form-control mb-2">
-
-                        <!-- <?php if ($supplier['logo']): ?>
-                            <img src="<?= $supplier['logo'] ?>" 
-                                 style="width: 120px; border-radius: 6px; border: 1px solid #ddd;">
-                        <?php endif; ?> -->
+                               value="<?= $supplier['dia_chi'] ?>">
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Ghi chú</label>
                     <div class="col-md-9">
-                        <textarea name="note" class="form-control" rows="3"><?= $supplier['notes'] ?></textarea>
+                        <textarea name="note" class="form-control" rows="3"><?= $supplier['ghi_chu'] ?></textarea>
                     </div>
                 </div>
 
                 <div class="text-end">
-                    <a href="index.php?act=supplier" class="btn btn-secondary">Quay lại</a>
-                    <a href="index.php?act=cap-nhat-supplier&id= ' class="btn btn-warning px-4">Cập nhật</a>
+                    <a href="index.php?act=quan-ly-supplier" class="btn btn-secondary">Quay lại</a>
+                    <a href="index.php?act=cap-nhat-supplier&id=" class="btn btn-warning px-4">Cập nhật</a>
                 </div>
 
             </form>

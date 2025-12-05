@@ -1,4 +1,6 @@
 <?php
+require_once './commons/env.php';
+
 class DanhGiaNCC
 {
     private $db;
@@ -11,7 +13,7 @@ class DanhGiaNCC
 
     public function layTatCa()
     {
-        $stmt = $this->db->query("SELECT * FROM {$this->bang} ORDER BY ngay_danh_gia DESC");
+        $stmt = $this->db->query("SELECT * FROM {$this->bang} ORDER BY id DESC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -33,13 +35,16 @@ class DanhGiaNCC
 
     public function capNhat($id, $data)
     {
-        $data['id'] = $id;
         $stmt = $this->db->prepare("
-            UPDATE {$this->bang}
-            SET nha_cung_cap_id=:nha_cung_cap_id, tour_id=:tour_id, diem=:diem,
-                binh_luan=:binh_luan, ngay_danh_gia=:ngay_danh_gia
+            UPDATE {$this->bang} SET
+                nha_cung_cap_id=:nha_cung_cap_id,
+                tour_id=:tour_id,
+                diem=:diem,
+                binh_luan=:binh_luan,
+                ngay_danh_gia=:ngay_danh_gia
             WHERE id=:id
         ");
+        $data['id'] = $id;
         return $stmt->execute($data);
     }
 

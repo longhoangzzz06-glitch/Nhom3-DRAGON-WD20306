@@ -337,6 +337,7 @@ ob_start();
       require_once './controllers/CongNoController.php';
       require_once './controllers/DanhGiaNCCController.php';
       require_once './controllers/TaiChinhTourController.php';
+      require_once './controllers/HdvAuthController.php';
 
 
       // Require toàn bộ file Models
@@ -344,11 +345,14 @@ ob_start();
       require_once './models/TourModel.php';
       require_once './models/BookingModel.php';
       require_once './models/SupplierModel.php';
+      
       // Require toàn bộ file Models mới
       require_once './models/HopDong.php';
       require_once './models/CongNo.php';
       require_once './models/DanhGiaNCC.php';
       require_once './models/TaiChinhTour.php';
+      require_once './models/HdvAuthModel.php';
+
 
 
       // Route
@@ -371,6 +375,19 @@ ob_start();
         // Xử lý cập nhật hướng dẫn viên
         'view-cap-nhat-hdv' => (new HDVController())->viewCapNhatHDV($_GET['id']),
         'cap-nhat-hdv' => (new HDVController())->capNhatHDV($_GET['id'], $_POST),
+        /* ==================== AUTH ==================== */
+
+// Giao diện đăng ký
+'register' => (new HdvAuthController())->registerForm(),
+// Xử lý đăng ký
+'post-register' => (new HdvAuthController())->register(),
+
+// Giao diện đăng nhập
+'login' => (new HdvAuthController())->loginForm(),
+
+// Đăng xuất
+'logout' => (new HdvAuthController())->logout(),
+
 
         /* Trang quản lý Tours */
         // Hiển thị danh sách Tours

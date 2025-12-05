@@ -2,7 +2,6 @@
 
 class SupplierController
 {
-    private $db;
     private $model;
 
     public function __construct()
@@ -10,12 +9,12 @@ class SupplierController
         $this->model = new Supplier();
     }
 
-    // Danh sách có tìm kiếm + phân trang
     public function index()
     {
         $keyword = $_GET['keyword'] ?? "";
         $service = $_GET['service'] ?? "";
         $page = $_GET['page'] ?? 1;
+
         $limit = 5;
         $offset = ($page - 1) * $limit;
 
@@ -23,12 +22,12 @@ class SupplierController
         $total = $this->model->count($keyword, $service);
         $totalPages = ceil($total / $limit);
 
-        require_once "./views/supplier/index.php";
+        require "./views/supplier/index.php";
     }
 
     public function create()
     {
-        require_once "./views/supplier/create.php";
+        require "./views/supplier/create.php";
     }
 
     public function store()
@@ -41,34 +40,45 @@ class SupplierController
         }
 
         $data = [
-            'name' => $_POST['name'],
-            'service_type' => $_POST['service_type'],
-            'phone' => $_POST['phone'],
-            'email' => $_POST['email'],
-            'address' => $_POST['address'],
-            'note' => $_POST['note'],
+            'ten' => $_POST['ten'] ?? '',
+            'loai_dich_vu' => $_POST['loai_dich_vu'] ?? '',
+            'dien_thoai' => $_POST['dien_thoai'] ?? '',
+            'email' => $_POST['email'] ?? '',
+            'dia_chi' => $_POST['dia_chi'] ?? '',
+            'ghi_chu' => $_POST['ghi_chu'] ?? '',
             'logo' => $logo
         ];
 
         $this->model->insert($data);
 
-        header("Location: index.php?act=supplier");
+        header("Location: index.php?act=quan-ly-supplier");
         exit;
     }
 
     public function edit()
     {
-        $supplier = $this->model->find($_GET['id']);
-        require_once "./views/supplier/edit.php";
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header("Location: index.php?act=quan-ly-supplier");
+            exit;
+        }
+
+        $supplier = $this->model->find($id);
+        require "./views/supplier/edit.php";
     }
 
     public function update()
     {
-        $id = $_POST['id'];
+        $id = $_POST['id'] ?? null;
+
+        if (!$id) {
+            header("Location: index.php?act=quan-ly-supplier");
+            exit;
+        }
 
         $supplier = $this->model->find($id);
 
-        $logo = $supplier['logo']; // giữ logo cũ
+        $logo = $supplier['logo'] ?? null;
 
         if (!empty($_FILES['logo']['name'])) {
             $logo = "uploads/suppliers/" . time() . "_" . $_FILES['logo']['name'];
@@ -76,25 +86,31 @@ class SupplierController
         }
 
         $data = [
-            'name' => $_POST['name'],
-            'service_type' => $_POST['service_type'],
-            'phone' => $_POST['phone'],
-            'email' => $_POST['email'],
-            'address' => $_POST['address'],
-            'note' => $_POST['note'],
-            'logo' => $logo
+            'ten' => $_POST['ten'] ?? '',
+            'loai_dich_vu' => $_POST['loai_dich_vu'] ?? '',
+            'dien_thoai' => $_POST['dien_thoai'] ?? '',
+            'email' => $_POST['email'] ?? '',
+            'dia_chi' => $_POST['dia_chi'] ?? '',
+            'ghi_chu' => $_POST['ghi_chu'] ?? '',
+            'logo' => $logo,
+            'id' => $id
         ];
 
         $this->model->update($id, $data);
 
-        header("Location: index.php?act=supplier");
+        header("Location: index.php?act=quan-ly-supplier");
         exit;
     }
 
     public function delete()
     {
-        $this->model->delete($_GET['id']);
-        header("Location: index.php?act=supplier");
+        $id = $_GET['id'] ?? null;
+
+        if ($id) {
+            $this->model->delete($id);
+        }
+
+        header("Location: index.php?act=quan-ly-supplier");
         exit;
     }
 }

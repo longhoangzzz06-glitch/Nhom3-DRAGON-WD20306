@@ -12,7 +12,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="text-primary fw-bold">Danh Sách Công Nợ</h3>
-        <a href="index.php?act=congno&method=create" class="btn btn-success">+ Thêm công nợ</a>
+        <a href="index.php?act=view-them-congno&method=create" class="btn btn-success">+ Thêm công nợ</a>
     </div>
 
     <!-- Table -->
@@ -41,8 +41,8 @@
                                 <td><?= $c['loai'] ?></td>
                                 <td><?= $c['ngay'] ?></td>
                                 <td>
-                                    <a href="index.php?act=congno&method=edit&id=<?= $c['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a href="index.php?act=congno&method=delete&id=<?= $c['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa công nợ này?')">Xóa</a>
+                                    <a href="index.php?act=view-cap-nhat-congno&method=edit&id=<?= $c['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a href="index.php?act=xoa-congno&method=delete&id=<?= $c['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa công nợ này?')">Xóa</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

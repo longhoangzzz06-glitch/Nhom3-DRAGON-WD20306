@@ -15,6 +15,39 @@
       <h1>Danh sách Hướng dẫn viên</h1>
     </div>
   </div>
+  <!-- ====================== ĐĂNG NHẬP / ĐĂNG KÝ ====================== -->
+  <div style="display:flex; gap: 10px; align-items:center;">
+
+      <?php if (!isset($_SESSION['hdv_id'])): ?>
+          <!-- Nút Đăng nhập -->
+          <a href="index.php?act=login" 
+             style="padding:8px 14px; background:#2563eb; color:white; border-radius:6px; text-decoration:none;">
+             Đăng nhập
+          </a>
+
+          <!-- Nút Đăng ký -->
+          <a href="index.php?act=register" 
+             style="padding:8px 14px; background:#16a34a; color:white; border-radius:6px; text-decoration:none;">
+             Đăng ký
+          </a>
+
+      <?php else: ?>
+          <!-- Hiển thị khi HDV đã login -->
+          <span style="font-size:16px; font-weight:500; color:#374151;">
+              Xin chào, HDV #<?= $_SESSION['hdv_id']; ?>
+          </span>
+
+          <a href="index.php?act=logout" 
+             style="padding:8px 14px; background:#dc2626; color:white; border-radius:6px; text-decoration:none;">
+             Đăng xuất
+          </a>
+      <?php endif; ?>
+
+  </div>
+  <!-- ================================================================== -->
+
+</div>
+
 
       <!-- Search section -->
       <div class="search-section">
