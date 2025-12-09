@@ -524,6 +524,12 @@ class HDVController
             // Lấy danh sách đánh giá trước đó (nếu có)
             $allReviews = $this->modelReview->getReviewsByTour($tourId, 'hdv');
             
+            // Attach service provider reviews to each review for history detail view
+            foreach ($allReviews as &$r) {
+                $r['serviceProviders'] = $this->modelReview->getServiceProviderReviews($r['id']);
+            }
+            unset($r);
+            
             // Find review by current HDV
             $currentReview = null;
             $serviceProviderReviews = [];

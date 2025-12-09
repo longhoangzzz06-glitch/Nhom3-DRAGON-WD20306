@@ -507,7 +507,9 @@
                         <span class="badge bg-<?= $rev['trangThai'] == 'submitted' ? 'success' : 'secondary' ?>">
                             <?= $rev['trangThai'] == 'submitted' ? 'Đã gửi' : 'Nháp' ?>
                         </span>
-                        <button type="button" class="btn btn-sm btn-info" style="color: white; padding: 4px 10px; font-size: 12px;">
+                        <button type="button" class="btn btn-sm btn-info" 
+                                onclick='loadReviewDetail(<?= json_encode($rev, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'
+                                style="color: white; padding: 4px 10px; font-size: 12px;">
                             <i class="fas fa-eye"></i> Chi tiết
                         </button>
                     </div>
@@ -542,6 +544,13 @@ document.querySelectorAll('.star-rating').forEach(ratingContainer => {
 
   // Initialize stars
   updateStars();
+
+  // Expose function to update rating externally
+  ratingContainer.setRating = function(val) {
+      currentRating = parseInt(val) || 0;
+      updateStars();
+      document.getElementById(ratingType + '-value').textContent = currentRating + '/5';
+  };
 
   stars.forEach(star => {
     star.addEventListener('click', function() {
@@ -798,6 +807,108 @@ function saveDraft() {
     console.error('Error:', error);
     alert('Có lỗi xảy ra khi lưu nháp!');
   });
+}
+
+function loadReviewDetail(review) {
+    // 1. Fill ratings
+    setRating('overall', review.diem);
+    setRating('customer-satisfaction', review.danhGia_haiLong);
+    setRating('safety', review.danhGia_anToan);
+
+    // 2. Fill Service Providers
+    // Reset first
+    document.querySelectorAll('.service-card').forEach(card => {
+        const nameInput = card.querySelector('input');
+        const ratingSelect = card.querySelector('select');
+        const commentTextarea = card.querySelector('textarea');
+        if(nameInput) nameInput.value = '';
+        if(ratingSelect) ratingSelect.value = '';
+        if(commentTextarea) commentTextarea.value = '';
+    });
+
+    if (review.serviceProviders) {
+        review.serviceProviders.forEach(sp => {
+            const card = document.querySelector(`.service-card[data-type="${sp.loaiNCC}"]`);
+            if (card) {
+                const nameInput = card.querySelector('input');
+                const ratingSelect = card.querySelector('select');
+                const commentTextarea = card.querySelector('textarea');
+                
+                if(nameInput) nameInput.value = sp.tenNCC || '';
+                if(ratingSelect) ratingSelect.value = sp.diem || '';
+                if(commentTextarea) commentTextarea.value = sp.nhanXet || '';
+            }
+        });
+    }
+
+    // 3. Fill Highlights
+    fillTagsAndText('highlights', review.diemNoiBat);
+
+    // 4. Fill Issues
+    fillTagsAndText('issues', review.vanDe);
+
+    // 5. General Comment
+    document.getElementById('general-comment').value = review.binhLuan || '';
+
+    // 6. Photos (Preview only)
+    const preview = document.getElementById('photo-preview');
+    preview.innerHTML = '';
+    if (review.anhMinhHoa) {
+        const photos = review.anhMinhHoa.split(',');
+        photos.forEach(photo => {
+            if (photo.trim()) {
+                const img = document.createElement('img');
+                img.src = `./uploads/reviews/${photo.trim()}`;
+                img.className = 'photo-preview';
+                preview.appendChild(img);
+            }
+        });
+    }
+    
+    // Close modal
+    closeModal();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setRating(type, value) {
+    const container = document.querySelector(`.star-rating[data-rating="${type}"]`);
+    if (container && container.setRating) {
+        container.setRating(value);
+    }
+}
+
+function fillTagsAndText(type, content) {
+    let text = content || '';
+    let tags = [];
+    
+    if (text.includes('Tags: ')) {
+        const parts = text.split('Tags: ');
+        text = parts[0].trim();
+        const tagsStr = parts[1].trim();
+        if (tagsStr) {
+            tags = tagsStr.split(',').map(t => t.trim());
+        }
+    }
+    
+    // Set text
+    const section = document.querySelector(`.${type === 'highlights' ? 'highlight' : 'issue'}-section`);
+    if(section) {
+        section.querySelector('textarea').value = text;
+        
+        // Set tags
+        const tagContainer = document.getElementById(`${type}-tags`);
+        if(tagContainer) {
+            tagContainer.innerHTML = '';
+            tags.forEach(tag => {
+                const tagEl = document.createElement('div');
+                tagEl.className = 'tag';
+                tagEl.innerHTML = `${tag} <span class="remove" onclick="removeTag(this)">×</span>`;
+                tagContainer.appendChild(tagEl);
+            });
+        }
+    }
 }
 </script>
 
