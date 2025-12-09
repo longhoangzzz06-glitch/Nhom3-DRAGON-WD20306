@@ -15,6 +15,7 @@
 
         <form action="index.php?act=them-hdv" method="POST" enctype="multipart/form-data">
 
+            <!-- ẢNH -->
             <div class="form-group">
                 <label for="anh">Ảnh: <span style="color: red;">*</span></label>
                 <div class="file-input-wrapper">
@@ -24,7 +25,23 @@
                     </label>
                 </div>
                 <p style="font-size: 12px; color: #999; margin-top: 5px;">Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif, webp)</p>
-            </div>            
+            </div>
+
+            <!-- TÀI KHOẢN -->
+            <h3 style="margin-top: 25px;">Thông tin tài khoản</h3>
+
+            <div class="form-group">
+                <label for="tenTk">Tên đăng nhập: <span style="color: red;">*</span></label>
+                <input type="text" id="tenTk" name="tenTk" required>
+            </div>
+
+            <div class="form-group">
+                <label for="mk">Mật khẩu: <span style="color: red;">*</span></label>
+                <input type="password" id="mk" name="mk" required>
+            </div>
+
+            <!-- THÔNG TIN HDV -->
+            <h3 style="margin-top: 25px;">Thông tin hướng dẫn viên</h3>
 
             <div class="form-group">
                 <label for="hoTen">Họ Tên: <span style="color: red;">*</span></label>
@@ -57,13 +74,11 @@
             </div>
 
             <div class="form-group">
-                <label for="nhomHDV_id">Loại Nhóm:</label>
-                <select name="nhomHDV_id" id="nhomHDV_id">
+                <label for="nhomHDV_id">Loại Nhóm: <span style="color: red;">*</span></label>
+                <select name="nhomHDV_id" id="nhomHDV_id" required>
                     <option value="">Chọn Loại Nhóm</option>
                     <?php
-                    // Query danh sách nhóm HDV từ DB
                         $nhomList = (new HDVController())->getAllNhomHDV();
-                        
                         foreach ($nhomList as $nhom) {
                             echo '<option value="' . htmlspecialchars($nhom['id']) . '">' . htmlspecialchars($nhom['ten']) . '</option>';
                         }
@@ -89,35 +104,25 @@
                 </select>
             </div>
 
-                <div class="button-group">
-                    <button type="submit" class="btn-submit">Thêm Hướng dẫn viên</button>
-                    <button type="button" class="btn-cancel" onclick="window.location.href='index.php?act=/'">Hủy</button>
-                </div>
-            </form>
+            <div class="button-group">
+                <button type="submit" class="btn-submit">Thêm Hướng dẫn viên</button>
+                <button type="button" class="btn-cancel" onclick="window.location.href='index.php?act=/'">Hủy</button>
             </div>
+        </form>
+        </div>
         </div>
     </div>
 
     <script>
-        // ==================== FILE INPUT HANDLER ====================
         const photoInput = document.getElementById('anh');
         const photoLabel = document.getElementById('anhLabel');
 
-        photoInput.addEventListener('change', function() {
+        photoInput.addEventListener('change', function () {
             if (this.files && this.files[0]) {
                 const fileName = this.files[0].name;
                 photoLabel.innerHTML = `<i class="fas fa-check-circle"></i> ${fileName}`;
                 photoLabel.classList.add('has-file');
             }
-        });
-
-        // ==================== FORM VALIDATION ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            
-            form.addEventListener('submit', function(e) {
-                // Basic validation can be added here if needed
-            });
         });
     </script>
 </body>

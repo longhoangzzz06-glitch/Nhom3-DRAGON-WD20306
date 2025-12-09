@@ -105,14 +105,11 @@
 
   <?php
   $__tours_data = isset($tours) ? $tours : array();
-  $__chinh_sach_data = (new TourController())->getAllChinhSach();
   ?>
 
 <script>
     // ==================== KHAI BÁO DỮ LIỆU ====================
     const tours = <?php echo json_encode($__tours_data, JSON_UNESCAPED_UNICODE); ?> || [];
-    const chinhSach = <?php echo json_encode($__chinh_sach_data, JSON_UNESCAPED_UNICODE); ?> || [];
-    let allChinhSach = [...chinhSach];
     let allTours = [...tours];
     const tableBody = document.getElementById("tour-table");
     const quickSearchInput = document.getElementById("quick-search");
@@ -258,20 +255,12 @@
                     <td class="detail-table-value">${tour.tgTao ? new Date(tour.tgTao).toLocaleDateString('vi-VN') : ''}</td>
                 </tr>
                 <tr class="detail-table-row">
-                    <td class="detail-table-label">Ngày bắt đầu</td>
-                    <td class="detail-table-value">${tour.tgBatDau ? new Date(tour.tgBatDau).toLocaleDateString('vi-VN') : ''}</td>
-                </tr>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">Ngày kết thúc</td>
-                    <td class="detail-table-value">${tour.tgKetThuc ? new Date(tour.tgKetThuc).toLocaleDateString('vi-VN') : ''}</td>
-                </tr>
-                <tr class="detail-table-row">
                     <td class="detail-table-label">Mô tả</td>
                     <td class="detail-table-value">${htmlEscape(tour.moTa ?? '')}</td>
                 </tr>
                 <tr class="detail-table-row">
-                    <td class="detail-table-label"><a href="javascript:void(0)" onclick="showChinhSachModal(${tour.chinhSach_id})">Chính sách <i class="fas fa-info-circle"></i></a></td>
-                    <td class="detail-table-value">${htmlEscape(tour.chinh_sach_ten ?? 'Không có')}</td>
+                    <td class="detail-table-label">Chính sách</td>
+                    <td class="detail-table-value"><textarea rows="10" cols="30" readonly>${htmlEscape(tour.chinhSach ?? 'Không có')}</textarea></td>
                 </tr>
                 <tr class="detail-table-row">
                     <td class="detail-table-label">Trạng thái</td>
@@ -300,63 +289,6 @@
         if (confirm('Bạn có chắc muốn xóa tour này không?')) {
             window.location.href = 'index.php?act=xoa-tour&id=' + tourId;
         }
-    }
-
-    // ==================== MODAL CHỈ TIẾT CHÍNH SÁCH ====================
-    function showChinhSachModal(chinhSachId) {
-        const chinhSach = allChinhSach.find(cs => cs.id === chinhSachId);
-        if (!chinhSach) {
-            alert('Không tìm thấy dữ liệu chính sách');
-            return;
-        }        
-
-        const detailHTML = `
-            <table>
-                <colgroup class="detail-table-colgroup">
-                    <col style="width:150px;">
-                    <col style="width:auto;">
-                </colgroup>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">Tên chính sách</td>
-                    <td class="detail-table-value">${htmlEscape(chinhSach.ten ?? '')}</td>
-                </tr>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">Chính sách giá</td>
-                    <td class="detail-table-value">${htmlEscape(chinhSach.gia ?? '')}</td>
-                </tr>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">Chính sách hoàn - hủy</td>
-                    <td class="detail-table-value">${htmlEscape(chinhSach.hoanHuy ?? '')}</td>
-                </tr>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">Chính sách đặt cọc - thanh toán</td>
-                    <td class="detail-table-value">${htmlEscape(chinhSach.datCoc_thanhToan ?? '')}</td>
-                </tr>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">Chính sách cho trẻ em</td>
-                    <td class="detail-table-value">${htmlEscape(chinhSach.treEm ?? '')}</td>
-                </tr>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">Chính sách bảo hiểm</td>
-                    <td class="detail-table-value">${htmlEscape(chinhSach.baoHiem ?? '')}</td>
-                </tr>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">Chính sách thay đổi dịch vụ</td>
-                    <td class="detail-table-value">${htmlEscape(chinhSach.thayDoiDichVu ?? '')}</td>
-                </tr>
-                <tr class="detail-table-row">
-                    <td class="detail-table-label">Chính sách bao gồm - không bao gồm</td>
-                    <td class="detail-table-value">${htmlEscape(chinhSach.baoGom_khongBaoGom ?? '')}</td>
-                </tr>
-            </table>
-        `;
-        
-        document.getElementById('chinhSachContent').innerHTML = detailHTML;
-        document.getElementById('chinhSachModal').classList.add('active');
-    }
-
-    function closeChinhSachModal() {
-        document.getElementById('chinhSachModal').classList.remove('active');
     }
 
     // ==================== EVENT LISTENERS ====================

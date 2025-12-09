@@ -32,7 +32,7 @@
                 <?php
                 $danhMucList = (new TourController()) -> getAllDanhMucTour();
                 foreach ($danhMucList as $danhMuc): ?>
-                    <option value="<?php echo $danhMuc['id']; ?>" <?php echo ($tour['danhMuc_id'] == $danhMuc['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($danhMuc['ten']); ?></option>
+                    <option value="<?php echo $danhMuc['id']; ?>" <?php echo ($tour['danhMuc_id'] == $danhMuc['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($danhMuc['ten']);?></option>
                 <?php endforeach; ?>
                 </select>
             </div>
@@ -43,20 +43,13 @@
             </div>
 
             <div class="form-group">
-                <label for="chinhSach_id">Chính sách:</label>
-                <textarea id="chinhSach_id" name="chinhSach_id"><?php echo htmlspecialchars($tour['chinhSach_id'] ?? ''); ?></textarea>
+                <label for="chinhSach">Chính sách:</label>
+                <textarea id="chinhSach" name="chinhSach" rows="10" cols="50"><?php echo htmlspecialchars($tour['chinhSach'] ?? '');?></textarea>
             </div>
 
             <div class="form-group">
-                <label for="ncc_id">Nhà cung cấp:</label>
-                <select name="ncc_id" id="ncc_id">
-                    <option value="">-- Chọn nhà cung cấp --</option>
-                    <?php
-                    $nccList = (new TourController()) -> getAllNhaCungCap();
-                    foreach ($nccList as $ncc): ?>
-                        <option value="<?php echo $ncc['id']; ?>" <?php echo ($tour['ncc_id'] == $ncc['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($ncc['ten']); ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <label for="gia">Giá:</label>
+                <input type="number" id="gia" name="gia" value="<?php echo htmlspecialchars($tour['gia'] ?? ''); ?>">
             </div>
 
             <div class="form-group">
@@ -77,14 +70,26 @@
 </div>
 
     <script>
-        // ==================== FORM VALIDATION ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            
-            form.addEventListener('submit', function(e) {
-                // Basic validation can be added here if needed
-            });
+    // ==================== FORM VALIDATION ====================
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        
+        form.addEventListener('submit', function(e) {
+            // Basic validation can be added here if needed
         });
+    });
+
+    function addNccToTour(tourId) {
+        const nccSelect = document.getElementById('ncc_id');
+        const nccId = nccSelect.value;
+
+        if (!nccId) {
+            alert('Vui lòng chọn nhà cung cấp để thêm.');
+            return;
+        }
+
+        window.location.href = `index.php?&act=them-ncc-vao-tour&tour_id=${tourId}&ncc_id=${nccId}`;
+    }
     </script>
 </body>
 </html>

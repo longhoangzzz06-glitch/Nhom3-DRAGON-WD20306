@@ -37,27 +37,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="chinhSach_id">Chính sách:</label>
-                        <select name="chinhSach_id" id="chinhSach_id">
-                            <option value="">-- Chọn chính sách --</option>
-                            <?php
-                            $chinhSachList = (new TourController()) -> getAllChinhSach();
-                            foreach ($chinhSachList as $chinhSach): ?>
-                                <option value="<?php echo $chinhSach['id']; ?>"><?php echo htmlspecialchars($chinhSach['ten']); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ncc_id">Nhà cung cấp:</label>
-                        <select name="ncc_id" id="ncc_id">
-                            <option value="">-- Chọn nhà cung cấp --</option>
-                            <?php
-                            $nccList = (new TourController()) -> getAllNhaCungCap();
-                            foreach ($nccList as $ncc): ?>
-                                <option value="<?php echo $ncc['id']; ?>"><?php echo htmlspecialchars($ncc['ten']); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <label for="chinhSach">Chính sách:</label>
+                        <textarea id="chinhSach" name="chinhSach"></textarea>
                     </div>
 
                     <div class="form-group">
@@ -71,16 +52,6 @@
                     <div class="form-group">
                         <label for="gia">Giá:</label>
                         <input type="number" id="gia" name="gia" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tgBatDau">Thời gian bắt đầu:</label>
-                        <input type="date" id="tgBatDau" name="tgBatDau" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tgKetThuc">Thời gian kết thúc:</label>
-                        <input type="date" id="tgKetThuc" name="tgKetThuc" required>
                     </div>
 
                     <div class="button-group">
