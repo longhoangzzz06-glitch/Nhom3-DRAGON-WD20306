@@ -328,6 +328,14 @@
                     <td class="detail-table-value">${htmlEscape(booking.hdv_hoTen ?? '')}</td>
                 </tr>
                 <tr class="detail-table-row">
+                    <td class="detail-table-label">Ngày Bắt Đầu</td>
+                    <td class="detail-table-value">${formatDate(booking.tgBatDau)}</td>
+                </tr>
+                <tr class="detail-table-row">
+                    <td class="detail-table-label">Ngày Kết Thúc</td>
+                    <td class="detail-table-value">${formatDate(booking.tgKetThuc)}</td>
+                </tr>
+                <tr class="detail-table-row">
                     <td class="detail-table-label">Ngày Đặt Đơn</td>
                     <td class="detail-table-value">${formatDate(booking.tgDatDon)}</td>
                 </tr>
@@ -369,66 +377,117 @@
     }
 
     // ==================== MODAL DANH SÁCH KHÁCH HÀNG ====================
-    function showCustomersList(bookingId) {
-        fetch('index.php?act=api-get-customers&booking_id=' + bookingId)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('HTTP error, status = ' + response.status);
-                }
-                return response.text();
-            })
-            .then(text => {
-                try {
-                    const data = JSON.parse(text);
-                    if (!data.success || !data.data) {
-                        alert('Không thể lấy danh sách khách hàng: ' + (data.message || 'Dữ liệu không hợp lệ'));
-                        return;
+    function showCustomersList(donHangId) {
+        // Hiển thị loading nhỏ nếu muốn
+        fetch('index.php?act=lay-don-hang-khach-hang&don_hang_id=' + encodeURIComponent(donHangId), {
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            console.log("HTTP Status:", response.status);
+            if (!response.ok) {
+                throw new Error('HTTP error, status = ' + response.status);
+            }
+            return response.text();
+        })
+        .then(text => {
+            console.log("=== RAW RESPONSE START ===");
+            console.log(text);
+            console.log("=== RAW RESPONSE END ===");
+
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('JSON parse error:', e);
+                console.error('Response text:', text);
+                alert('Lỗi JSON: ' + e.message + '. Kiểm tra console để xem raw response.');
+                return;
+            }
+
+            if (!data.success) {
+                console.error('API Error:', data.message);
+                alert('API lỗi: ' + (data.message || 'Không xác định'));
+                return;
+            }
+
+            const customers = data.data || [];
+
+            let html = `
+                <table style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="padding:8px; text-align:left;">ID</th>
+                            <th style="padding:8px; text-align:left;">Họ tên</th>
+                            <th style="padding:8px; text-align:left;">Giới tính</th>
+                            <th style="padding:8px; text-align:left;">Tuổi</th>
+                            <th style="padding:8px; text-align:left;">Điện thoại</th>
+                            <th style="padding:8px; text-align:left;">Email</th>
+                            <th style="padding:8px; text-align:left;">Check-in</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            if (customers.length === 0) {
+                html += `<tr><td colspan="7" style="padding:10px;"><em>Chưa có khách hàng nào</em></td></tr>`;
+            } else {
+                customers.forEach(c => {
+                    // Tính tuổi nếu có ngày sinh
+                    let tuoi = 'N/A';
+                    if (c.ngaySinh) {
+                        try {
+                            const dob = new Date(c.ngaySinh);
+                            const diff = new Date().getFullYear() - dob.getFullYear();
+                            tuoi = isNaN(diff) ? 'N/A' : diff;
+                        } catch (err) { tuoi = 'N/A'; }
+                    } else if (c.tuoi) {
+                        tuoi = c.tuoi;
                     }
 
-                    const customers = data.data || [];
-                    let html = `
-                        <table>
-                            <colgroup>
-                                <col style="width:150px;">
-                                <col style="width:auto;">
-                            </colgroup>
+                    html += `
+                        <tr>
+                            <td style="padding:8px; border-top:1px solid #eee;">${c.khachHang_id ?? c.id ?? ''}</td>
+                            <td style="padding:8px; border-top:1px solid #eee;">${htmlEscape(c.ten || '')}</td>
+                            <td style="padding:8px; border-top:1px solid #eee;">${htmlEscape(c.gioiTinh || '')}</td>
+                            <td style="padding:8px; border-top:1px solid #eee;">${tuoi}</td>
+                            <td style="padding:8px; border-top:1px solid #eee;">${htmlEscape(c.dienThoai || 'N/A')}</td>
+                            <td style="padding:8px; border-top:1px solid #eee;">${htmlEscape(c.email || 'N/A')}</td>
+                            <td style="padding:8px; border-top:1px solid #eee;">
+                                ${c.trangThai_checkin == 1 ? '<span style="color: green; font-weight: 600;">Đã check-in</span>' : '<span style="color: red; font-weight: 600;">Chưa check-in</span>'}
+                            </td>
+                        </tr>
                     `;
+                });
+            }
 
-                    if (customers.length === 0) {
-                        html += `<tr><td colspan="2"><em>Chưa có khách hàng nào</em></td></tr>`;
-                    } else {
-                        customers.forEach(c => {
-                            html += `
-                                <tr>
-                                    <td>${c.id}</td>
-                                    <td>${htmlEscape(c.ten)}</td>
-                                    <td>${htmlEscape(c.gioiTinh)}</td>
-                                    <td>${c.tuoi || 'N/A'}</td>
-                                    <td>${htmlEscape(c.dienThoai || 'N/A')}</td>
-                                    <td>${htmlEscape(c.email || 'N/A')}</td>
-                                    <td>${c.trangThai_checkin == 1 ? '<span style="color: green; font-weight: 600;">Đã check-in</span>' : '<span style="color: red; font-weight: 600;">Chưa check-in</span>'}</td>
-                                </tr>
-                            `;
-                        });
-                    }
+            html += `</tbody></table>`;
 
-                    html += `</table>`;
-                    document.getElementById('customersContent').innerHTML = html;
-                    document.getElementById('customersModal').classList.add('active');
-                } catch (parseError) {
-                    console.error('JSON parse error:', parseError);
-                    console.error('Response text:', text);
-                    alert('Lỗi: Không thể xử lý dữ liệu từ server');
-                }
-            })
-            .catch(err => {
-                console.error('Fetch error:', err);
-                alert('Lỗi khi lấy danh sách khách hàng: ' + err.message);
-            });
+            // Ghi vào modal
+            const contentEl = document.getElementById('customersContent');
+            if (contentEl) contentEl.innerHTML = html;
+            const modal = document.getElementById('customersModal');
+            if (modal) modal.classList.add('active');
+
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            alert('Lỗi khi lấy danh sách khách hàng: ' + err.message);
+        });
     }
+
+    // Simple HTML escape
+    function htmlEscape(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, function(m) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+        });
+    }
+
     function closeCustomersModal() {
-        document.getElementById('customersModal').classList.remove('active');
+        const modal = document.getElementById('customersModal');
+        if (modal) modal.classList.remove('active');
     }
+
 
     // ==================== MODAL CHECK-IN KHÁCH ====================
     function showCheckInModal(bookingId) {
@@ -439,7 +498,7 @@
         }
 
         // Fetch customer list chi tiết từ server
-        fetch('index.php?act=api-get-customers&booking_id=' + bookingId)
+        fetch('index.php?act=lay-don-hang-khach-hang&don_hang_id=' + bookingId)
         .then(response => {
             if (!response.ok) {
                 throw new Error('HTTP error, status = ' + response.status);
@@ -609,31 +668,20 @@
   </div>
 
   <!-- Customers List Modal -->
-  <div id="customersModal" class="modal">
-    <div class="modal-content" style="max-width: 900px;">
-      <div class="modal-header">
-        <h2>Danh sách Khách Hàng</h2>
-        <span class="close-modal" onclick="closeCustomersModal()">&times;</span>
-      </div>
-      <div class="modal-body" style="padding: 20px;">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Tên khách hàng</th>
-                    <th>Giới tính</th>
-                    <th>Tuổi</th>
-                    <th>Số điện thoại</th>
-                    <th>Email</th>
-                    <th>Trạng thái</th>
-                </tr>
-            </thead>
-            <tbody id="customersContent">
-            </tbody>            
-        </table>
-      </div>
+<div id="customersModal" class="modal" style="display:none; position:fixed; inset:0; align-items:center; justify-content:center;">
+  <div style="background:#fff; width:90%; max-width:900px; border-radius:8px; box-shadow:0 8px 30px rgba(0,0,0,0.2); overflow:hidden;">
+    <div style="padding:12px 16px; background:#f5f5f5; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0;">Danh sách khách hàng</h3>
+      <button onclick="closeCustomersModal()" style="background:transparent; border:0; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+    <div id="customersContent" style="padding:16px; max-height:60vh; overflow:auto;">
+      <!-- Nội dung table sẽ được JS render ở đây -->
+    </div>
+    <div style="padding:12px; text-align:right; background:#fafafa;">
+      <button onclick="closeCustomersModal()" style="padding:8px 12px; border-radius:6px; background:#ddd; border:0; cursor:pointer;">Đóng</button>
     </div>
   </div>
+</div>
 
   <!-- Check-in Modal -->
   <div id="checkInModal" class="modal">
