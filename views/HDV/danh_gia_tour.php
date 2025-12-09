@@ -864,12 +864,50 @@ function loadReviewDetail(review) {
             }
         });
     }
+
+    // 7. Set Read-only state based on status
+    setFormReadOnly(review.trangThai === 'submitted');
     
     // Close modal
     closeModal();
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setFormReadOnly(isReadOnly) {
+    const form = document.getElementById('reviewForm');
+    
+    // Inputs, Selects, Textareas
+    const elements = form.querySelectorAll('input, select, textarea');
+    elements.forEach(el => {
+        el.disabled = isReadOnly;
+    });
+
+    // Stars
+    const starRatings = form.querySelectorAll('.star-rating');
+    starRatings.forEach(el => {
+        el.style.pointerEvents = isReadOnly ? 'none' : 'auto';
+        el.style.opacity = isReadOnly ? '0.7' : '1';
+    });
+
+    // Tags remove buttons
+    const removeBtns = form.querySelectorAll('.tag .remove');
+    removeBtns.forEach(el => {
+        el.style.display = isReadOnly ? 'none' : 'inline';
+    });
+
+    // Photo upload button
+    const uploadBtn = form.querySelector('.upload-btn');
+    if(uploadBtn) {
+        uploadBtn.style.display = isReadOnly ? 'none' : 'flex';
+    }
+
+    // Form Actions (Submit/Save buttons)
+    const actionBtns = form.querySelector('.form-actions');
+    if(actionBtns) {
+        actionBtns.style.display = isReadOnly ? 'none' : 'flex';
+    }
 }
 
 function setRating(type, value) {
