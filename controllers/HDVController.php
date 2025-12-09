@@ -530,9 +530,11 @@ class HDVController
             
             foreach ($allReviews as $review) {
                 if ($review['hdv_id'] == $hdvId) {
-                    $currentReview = $review;
-                    // Get service provider reviews
-                    $serviceProviderReviews = $this->modelReview->getServiceProviderReviews($review['id']);
+                    // Chỉ load lại form nếu là bản nháp
+                    if ($review['trangThai'] == 'draft') {
+                        $currentReview = $review;
+                        $serviceProviderReviews = $this->modelReview->getServiceProviderReviews($review['id']);
+                    }
                     break; 
                 }
             }

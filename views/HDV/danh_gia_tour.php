@@ -699,7 +699,8 @@ function submitReview(event) {
   .then(data => {
     if (data.success) {
       alert('Đã gửi phản hồi thành công!\nCảm ơn bạn đã đóng góp ý kiến để cải thiện chất lượng dịch vụ.');
-      window.location.href = '?act=hdv-chi-tiet-tour&id=<?= $tour_id ?>';
+      // Reset form bằng cách reload trang (Controller sẽ trả về form trống nếu đánh giá mới nhất là 'submitted')
+      location.reload();
     } else {
       alert('Lỗi: ' + (data.message || 'Không thể lưu đánh giá'));
     }
