@@ -285,9 +285,11 @@
 
     <div class="main-wrapper">
       <form id="reviewForm" onsubmit="submitReview(event)">
+        <!-- 
         <?php if ($currentReview): ?>
             <input type="hidden" name="id" value="<?= $currentReview['id'] ?>">
         <?php endif; ?>
+        -->
 
         <!-- Overall Rating -->
         <div class="rating-section">
@@ -662,10 +664,12 @@ function submitReview(event) {
   const generalComment = document.getElementById('general-comment').value.trim();
 
   // Append data to FormData
+  /*
   const idInput = document.querySelector('input[name="id"]');
   if (idInput) {
       formData.append('id', idInput.value);
   }
+  */
   formData.append('tour_id', <?= $tour_id ?>);
   formData.append('hdv_id', <?= $_SESSION['hdv_id'] ?? 5 ?>);
   formData.append('diem', ratings['overall'] || 0);
@@ -744,10 +748,12 @@ function saveDraft() {
   const issueText = document.querySelector('.issue-section textarea').value.trim();
   const generalComment = document.getElementById('general-comment').value.trim();
   
+  /*
   const idInput = document.querySelector('input[name="id"]');
   if (idInput) {
       formData.append('id', idInput.value);
   }
+  */
   formData.append('tour_id', <?= $tour_id ?>);
   formData.append('hdv_id', <?= $_SESSION['hdv_id'] ?? 5 ?>);
   formData.append('diem', ratings['overall'] || 0);
@@ -777,9 +783,7 @@ function saveDraft() {
     if (data.success) {
       alert('Đã lưu nháp thành công!');
       // Reload to get the ID if it was a new draft
-      if (!idInput) {
-          location.reload();
-      }
+      location.reload();
     } else {
       alert('Lỗi: ' + (data.message || 'Không thể lưu nháp'));
     }
