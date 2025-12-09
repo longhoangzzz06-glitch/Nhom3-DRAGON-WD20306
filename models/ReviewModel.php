@@ -41,9 +41,9 @@ class ReviewModel
     public function addDiary($data)
     {
         $sql = "INSERT INTO nhat_ky_tour 
-                (tour_id, hdv_id, loai, tieuDe, noiDung, doUuTien, viTri, tags, anhMinhHoa) 
+                (tour_id, hdv_id, loai, tieuDe, noiDung, doUuTien, viTri, tags, anhMinhHoa, ngayTao) 
                 VALUES 
-                (:tour_id, :hdv_id, :loai, :tieuDe, :noiDung, :doUuTien, :viTri, :tags, :anhMinhHoa)";
+                (:tour_id, :hdv_id, :loai, :tieuDe, :noiDung, :doUuTien, :viTri, :tags, :anhMinhHoa, :ngayTao)";
         
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([
@@ -55,7 +55,8 @@ class ReviewModel
             'doUuTien' => $data['doUuTien'] ?? 'normal',
             'viTri' => $data['viTri'] ?? '',
             'tags' => $data['tags'] ?? '',
-            'anhMinhHoa' => $data['anhMinhHoa'] ?? ''
+            'anhMinhHoa' => $data['anhMinhHoa'] ?? '',
+            'ngayTao' => $data['date']
         ]);
     }
 
@@ -69,7 +70,8 @@ class ReviewModel
                     doUuTien = :doUuTien,
                     viTri = :viTri,
                     tags = :tags,
-                    anhMinhHoa = :anhMinhHoa
+                    anhMinhHoa = :anhMinhHoa,
+                    ngayTao = :ngayTao
                 WHERE id = :id";
         
         $stmt = $this->conn->prepare($sql);
@@ -81,6 +83,7 @@ class ReviewModel
             'viTri' => $data['viTri'] ?? '',
             'tags' => $data['tags'] ?? '',
             'anhMinhHoa' => $data['anhMinhHoa'] ?? '',
+            'ngayTao' => $data['date'],
             'id' => $id
         ]);
     }

@@ -524,15 +524,23 @@ class HDVController
             // Lấy danh sách đánh giá trước đó (nếu có)
             $allReviews = $this->modelReview->getReviewsByTour($tourId, 'hdv');
             
+            // Attach service provider reviews to each review for history detail view
+            foreach ($allReviews as &$r) {
+                $r['serviceProviders'] = $this->modelReview->getServiceProviderReviews($r['id']);
+            }
+            unset($r);
+            
             // Find review by current HDV
             $currentReview = null;
             $serviceProviderReviews = [];
             
             foreach ($allReviews as $review) {
                 if ($review['hdv_id'] == $hdvId) {
-                    $currentReview = $review;
-                    // Get service provider reviews
-                    $serviceProviderReviews = $this->modelReview->getServiceProviderReviews($review['id']);
+                    // Chỉ load lại form nếu là bản nháp
+                    if ($review['trangThai'] == 'draft') {
+                        $currentReview = $review;
+                        $serviceProviderReviews = $this->modelReview->getServiceProviderReviews($review['id']);
+                    }
                     break; 
                 }
             }
