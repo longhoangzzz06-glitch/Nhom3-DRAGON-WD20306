@@ -568,6 +568,8 @@ class HDVController
             }
             
             // Lưu đánh giá chính
+            // Luôn tạo mới đánh giá (theo yêu cầu: mỗi lần gửi là tạo mới, không update)
+            /*
             if (isset($data['id']) && $data['id'] > 0) {
                 // Update
                 $result = $this->modelReview->updateReview($data['id'], $data);
@@ -577,6 +579,11 @@ class HDVController
                 $reviewId = $this->modelReview->addReview($data);
                 $result = $reviewId !== false;
             }
+            */
+            
+            // Insert luôn
+            $reviewId = $this->modelReview->addReview($data);
+            $result = $reviewId !== false;
             
             if ($result && $reviewId) {
                 // Lưu đánh giá nhà cung cấp
