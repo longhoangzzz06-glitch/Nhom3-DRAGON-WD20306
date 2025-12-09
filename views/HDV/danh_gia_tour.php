@@ -503,9 +503,14 @@
                         (<?= $rev['diem'] ?>/5)
                     </div>
                     <p style="margin-top: 5px;"><?= htmlspecialchars($rev['binhLuan']) ?></p>
-                    <span class="badge bg-<?= $rev['trangThai'] == 'submitted' ? 'success' : 'secondary' ?>">
-                        <?= $rev['trangThai'] == 'submitted' ? 'Đã gửi' : 'Nháp' ?>
-                    </span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                        <span class="badge bg-<?= $rev['trangThai'] == 'submitted' ? 'success' : 'secondary' ?>">
+                            <?= $rev['trangThai'] == 'submitted' ? 'Đã gửi' : 'Nháp' ?>
+                        </span>
+                        <button type="button" class="btn btn-sm btn-info" style="color: white; padding: 4px 10px; font-size: 12px;">
+                            <i class="fas fa-eye"></i> Chi tiết
+                        </button>
+                    </div>
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>
