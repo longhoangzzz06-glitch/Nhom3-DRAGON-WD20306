@@ -1,6 +1,3 @@
-<?php
-// views/HDV/capNhat_HDV.php
-?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
