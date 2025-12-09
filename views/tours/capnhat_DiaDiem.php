@@ -63,11 +63,6 @@
                         <?php endif; ?>
                     </div>
 
-                    <div class="form-group">
-                        <label for="thuTu">Thứ tự:</label>
-                        <input type="number" id="thuTu" name="thuTu" value="<?php echo $diaDiem['thuTu']; ?>">
-                    </div>
-
                     <div class="button-group">
                         <button type="submit" class="btn-submit">Cập nhật</button>
                         <button type="button" class="btn-cancel" onclick="window.location.href='index.php?act=quan-ly-dia-diem'">Hủy</button>
