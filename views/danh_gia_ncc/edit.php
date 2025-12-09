@@ -15,7 +15,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <form action="index.php?act=quan-ly-danhgia&method=update" method="POST">
+            <form action="index.php?act=view-cap-nhat-danhgia" method="POST">
 
                 <input type="hidden" name="id" value="<?= $danhgia['id'] ?>">
 

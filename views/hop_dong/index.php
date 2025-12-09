@@ -12,7 +12,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="text-primary fw-bold">Danh Sách Hợp Đồng</h3>
-        <a href="index.php?act=view-them-hopdong&method=create" class="btn btn-success">+ Thêm hợp đồng</a>
+        <a href="index.php?act=view-them-hopdong" class="btn btn-success">+ Thêm hợp đồng</a>
     </div>
 
     <!-- Table -->
@@ -45,8 +45,8 @@
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <a href="index.php?act=view-cap-nhat-hopdong&method=edit&id=<?= $h['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a href="index.php?act=view-xoa-hopdong&method=delete&id=<?= $h['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa hợp đồng này?')">Xóa</a>
+                                    <a href="index.php?act=view-cap-nhat-hopdong=edit&id=<?= $h['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a href="index.php?act=view-xoa-hopdong=delete&id=<?= $h['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa hợp đồng này?')">Xóa</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

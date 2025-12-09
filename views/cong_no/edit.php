@@ -15,7 +15,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <form action="index.php?act=cap-nhat-congno&method=update" method="POST">
+            <form action="index.php?act=cap-nhat-congno" method="POST">
 
                 <input type="hidden" name="id" value="<?= $congno['id'] ?>">
 

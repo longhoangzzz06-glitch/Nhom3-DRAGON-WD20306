@@ -25,7 +25,12 @@ class HopDong
      */
     public function layMot($id)
     {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->bang} WHERE id = :id");
+        $sql = "
+        Select hd.*, t.ten AS tenTour From hop_dong hd
+        JOIN tour t ON t.id = hd.tour_id
+        WHERE id = :id
+        ";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }

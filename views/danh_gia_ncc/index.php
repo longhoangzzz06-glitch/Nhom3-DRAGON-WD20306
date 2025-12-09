@@ -12,7 +12,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="text-primary fw-bold">Danh Sách Đánh Giá NCC</h3>
-        <a href="index.php?act=view-them-danhgia&method=create" class="btn btn-success">+ Thêm đánh giá</a>
+        <a href="index.php?act=view-them-danhgia" class="btn btn-success">+ Thêm đánh giá</a>
     </div>
 
     <div class="card shadow-sm">
@@ -40,8 +40,8 @@
                                 <td><?= $d['binh_luan'] ?></td>
                                 <td><?= $d['ngay_danh_gia'] ?></td>
                                 <td>
-                                    <a href="index.php?act=view-cap-nhat-danhgia&method=edit&id=<?= $d['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a href="index.php?act=xoa-danhgia&method=delete&id=<?= $d['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa đánh giá này?')">Xóa</a>
+                                    <a href="index.php?act=view-cap-nhat-danhgia=edit&id=<?= $d['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a href="index.php?act=xoa-danhgia=delete&id=<?= $d['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa đánh giá này?')">Xóa</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

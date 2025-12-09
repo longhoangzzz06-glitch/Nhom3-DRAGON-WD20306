@@ -30,9 +30,9 @@
         <div class="mb-3">
             <label class="form-label">Tour</label>
             <select name="tour_id" class="form-control" required>
-                <?php foreach($tours as $tour): ?>
-                    <option value="<?= $tour['id'] ?>" <?= $hopdong['tour_id']==$tour['id']?'selected':'' ?>>
-                        <?= $tour['ten_tour'] ?>
+                <?php foreach($tour as $t): ?>
+                    <option value="<?= $t['id'] ?>" <?= $hopdong['tour_id']==$t['id']?'selected':'' ?>>
+                        <?= $t['ten_'] ?>
                     </option>
                 <?php endforeach; ?>
             </select>

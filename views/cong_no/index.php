@@ -41,8 +41,8 @@
                                 <td><?= $c['loai'] ?></td>
                                 <td><?= $c['ngay'] ?></td>
                                 <td>
-                                    <a href="index.php?act=view-cap-nhat-congno&method=edit&id=<?= $c['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
-                                    <a href="index.php?act=xoa-congno&method=delete&id=<?= $c['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa công nợ này?')">Xóa</a>
+                                    <a href="index.php?act=view-cap-nhat-congno=edit&id=<?= $c['id'] ?>" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a href="index.php?act=xoa-congno=delete&id=<?= $c['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Xóa công nợ này?')">Xóa</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

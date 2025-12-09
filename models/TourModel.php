@@ -1,14 +1,15 @@
 <?php
-class TourModel {
+class TourModel
+{
     private $conn;
 
-    public function __construct() 
+    public function __construct()
     {
         $this->conn = connectDB();
     }
 
     // Lấy dữ liệu tất cả tour (JOIN với danh_muc để lấy tên)
-    public function getAllTour() 
+    public function getAllTour()
     {
         $sql = "SELECT t.*, dm.ten as danh_muc_ten, cs.ten as chinh_sach_ten FROM tour t 
                 LEFT JOIN tour_danh_muc dm ON t.danhMuc_id = dm.id
@@ -20,7 +21,7 @@ class TourModel {
     }
 
     // Lấy dữ liệu tất cả danh mục, nhà cung cấp, chính sách
-    public function getAllDanhMucTour() 
+    public function getAllDanhMucTour()
     {
         $sql = "SELECT * FROM tour_danh_muc";
         $stmt = $this->conn->prepare($sql);
@@ -28,15 +29,15 @@ class TourModel {
         $danhMucList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $danhMucList;
     }
-    public function getAllNhaCungCap() 
+    public function getAllNhaCungCap()
     {
-        $sql = "SELECT * FROM ncc";
+        $sql = "SELECT * FROM nha_cung_cap";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
-        $nccList = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $nccList;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function getAllChinhSach() 
+
+    public function getAllChinhSach()
     {
         $sql = "SELECT * FROM tour_chinh_sach";
         $stmt = $this->conn->prepare($sql);
@@ -46,7 +47,8 @@ class TourModel {
     }
 
     // Lấy dữ liệu tour theo ID
-    public function getTourById($id) {
+    public function getTourById($id)
+    {
         $sql = "SELECT * FROM tour WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(['id' => $id]);
@@ -55,7 +57,7 @@ class TourModel {
     }
 
     // Thêm tour mới
-    public function addTour($data) 
+    public function addTour($data)
     {
         $sql = "INSERT INTO tour (
             ten, danhMuc_id, moTa, chinhSach_id, ncc_id, trangThai, gia, tgBatDau, tgKetThuc, tgTao, nguoiTao_id
@@ -67,7 +69,7 @@ class TourModel {
             'ten'         => $data['ten'] ?? '',
             'danhMuc_id'  => $data['danhMuc_id'] ?? null,
             'moTa'        => $data['moTa'] ?? '',
-            'chinhSach_id'=> $data['chinhSach_id'] ?? null,
+            'chinhSach_id' => $data['chinhSach_id'] ?? null,
             'ncc_id'      => $data['ncc_id'] ?? null,
             'trangThai'   => $data['trangThai'] ?? 'Đang Đóng',
             'gia'         => $data['gia'] ?? 0,
@@ -79,7 +81,8 @@ class TourModel {
     }
 
     // Cập nhật thông tin tour
-    public function updateTour($id, $data) {
+    public function updateTour($id, $data)
+    {
         $sql = "UPDATE tour SET 
             ten = :ten, 
             danhMuc_id = :danhMuc_id, 
@@ -96,7 +99,7 @@ class TourModel {
             'ten'          => $data['ten'] ?? '',
             'danhMuc_id'  => $data['danhMuc_id'] ?? null,
             'moTa'        => $data['moTa'] ?? '',
-            'chinhSach_id'=> $data['chinhSach_id'] ?? null,
+            'chinhSach_id' => $data['chinhSach_id'] ?? null,
             'ncc_id'      => $data['ncc_id'] ?? null,
             'trangThai'   => $data['trangThai'] ?? 'Đang Đóng',
             'gia'         => $data['gia'] ?? 0,
@@ -107,10 +110,10 @@ class TourModel {
     }
 
     // Xóa tour theo ID
-    public function deleteTour($id) {
+    public function deleteTour($id)
+    {
         $sql = "DELETE FROM tour WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([$id]);
     }
 }
-?>

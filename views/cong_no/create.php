@@ -15,7 +15,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <form action="index.php?act=view-them-congno&method=store" method="POST">
+            <form action="index.php?act=view-them-congno" method="POST">
 
                 <!-- Nhà cung cấp -->
                 <div class="mb-3">
@@ -34,7 +34,7 @@
                     <select name="tour_id" class="form-select" required>
                         <option value="">-- Chọn tour --</option>
                         <?php foreach ($tours as $tour): ?>
-                            <option value="<?= $tour['id'] ?>"><?= $tour['ten_tour'] ?></option>
+                            <option value="<?= $tour['id'] ?>"><?= $tour['ten'] ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
