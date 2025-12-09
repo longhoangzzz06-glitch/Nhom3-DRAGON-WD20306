@@ -1,4 +1,65 @@
-<!doctype html>
+<?php
+ob_start();
+session_start();
+
+// Commons
+require_once './commons/env.php';
+require_once './commons/function.php';
+
+// Controllers
+require_once './controllers/HDVController.php';
+require_once './controllers/TourController.php';
+require_once './controllers/BookingController.php';
+require_once './controllers/ReportController.php';
+require_once './controllers/TourDetailController.php';
+require_once './controllers/DiaDiemController.php';
+require_once './controllers/NCCController.php';
+
+// Models
+require_once './models/HDVModel.php';
+require_once './models/TourModel.php';
+require_once './models/BookingModel.php';
+require_once './models/ReportModel.php';
+require_once './models/CheckpointModel.php';
+require_once './models/RequirementModel.php';
+require_once './models/ReviewModel.php';
+require_once './models/TourDetailModel.php';
+require_once './models/DiaDiemModel.php';
+require_once './models/TaiKhoanModel.php';
+require_once './models/NCCModel.php';
+require_once './models/NCCTourModel.php';
+
+$act = $_GET['act'] ?? '/';
+$apiRoutes = [
+    'hdv-save-checkin',
+    'hdv-complete-checkpoint',
+    'hdv-save-requirement',
+    'hdv-delete-requirement',
+    'hdv-get-requirements-by-customer',
+    'hdv-save-diary',
+    'hdv-delete-diary',
+    'hdv-save-review',
+    'api-update-diadiem-order'
+];
+
+// Nếu là API
+if (in_array($act, $apiRoutes)) {
+        match ($act) {
+            'hdv-save-checkin' => (new HDVController())->saveCheckin(),
+            'hdv-complete-checkpoint' => (new HDVController())->completeCheckpoint(),
+            'hdv-save-requirement' => (new HDVController())->saveRequirement(),
+            'hdv-delete-requirement' => (new HDVController())->deleteRequirement(),
+            'hdv-get-requirements-by-customer' => (new HDVController())->getRequirementsByCustomer(),
+            'hdv-save-diary' => (new HDVController())->saveDiary(),
+            'hdv-delete-diary' => (new HDVController())->deleteDiary(),
+            'hdv-save-review' => (new HDVController())->saveReview(),
+            'api-update-diadiem-order' => (new DiaDiemController())->updateOrder(),
+        };
+    exit;
+}
+
+?>
+<!DOCTYPE html>
 <html lang="en">
   <!--begin::Head-->
   <head>
@@ -10,20 +71,11 @@
     <meta name="author" content="ColorlibHQ" />
     <meta name="description" content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS."/>
     <meta name="keywords" content="bootstrap 5, bootstrap, bootstrap 5 admin dashboard, bootstrap 5 dashboard, bootstrap 5 charts, bootstrap 5 calendar, bootstrap 5 datepicker, bootstrap 5 tables, bootstrap 5 datatable, vanilla js datatable, colorlibhq, colorlibhq dashboard, colorlibhq admin dashboard"/>
-    <!--end::Primary Meta Tags-->
     <link rel="icon" type="image/x-icon" href="./uploads/Logo_dragontravel.svg"/>
-    <!--begin::Fonts-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css" integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q=" crossorigin="anonymous"/>
-    <!--end::Fonts-->
-    <!--begin::Third Party Plugin(OverlayScrollbars)-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.10.1/styles/overlayscrollbars.min.css" integrity="sha256-tZHrRjVqNSRyWg2wbppGnT833E/Ys0DHWGwT04GiqQg=" crossorigin="anonymous"/>
-    <!--end::Third Party Plugin(OverlayScrollbars)-->
-    <!--begin::Third Party Plugin(Bootstrap Icons)-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" integrity="sha256-9kPW/n5nn53j4WMRYAxe9c1rCY96Oogo/MKSVdKzPmI=" crossorigin="anonymous"/>
-    <!--end::Third Party Plugin(Bootstrap Icons)-->
-    <!--begin::Required Plugin(AdminLTE)-->
     <link rel="stylesheet" href="./views/chung/css/layout/adminlte.css" />
-    <!--end::Required Plugin(AdminLTE)-->
   </head>
   <!--end::Head-->
   <!--begin::Body-->
@@ -254,6 +306,13 @@
           <nav class="mt-2">
             <!--begin::Sidebar Menu-->
             <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+              <!-- Báo cáo vận hành -->
+              <li class="nav-item" id="nav-report">
+                  <a href="index.php?act=bao-cao-van-hanh" class="nav-link">
+                      <i class="nav-icon bi bi-graph-up"></i>
+                      <p class="nav-text">Báo cáo Vận hành</p>
+                  </a>
+              </li>              
               <!-- Quản lý Hướng dẫn viên -->
               <li class="nav-item" id="nav-hdv">
                   <a href="index.php?act=quan-ly-hdv" class="nav-link">
@@ -274,7 +333,22 @@
                       <i class="nav-icon bi bi-calendar-check"></i>
                       <p class="nav-text">Quản lý Booking</p>
                   </a>
-              </li>            
+              </li>
+
+              <!-- HDV - Lịch làm việc -->
+              <li class="nav-item" id="nav-hdv-work">
+                  <a href="index.php?act=hdv-lich-lam-viec" class="nav-link">
+                      <i class="nav-icon bi bi-calendar3"></i>
+                      <p class="nav-text">Lịch làm việc HDV</p>
+                  </a>
+              </li>   
+              <!-- HDV - Địa điểm -->
+              <li class="nav-item" id="nav-diadiem">
+                  <a href="index.php?act=quan-ly-dia-diem" class="nav-link">
+                      <i class="nav-icon bi bi-geo-alt"></i>
+                      <p class="nav-text">Quản lý Địa điểm</p>
+                  </a>  
+              </li>
             </ul>
             <!--end::Sidebar Menu-->
           </nav>
@@ -332,31 +406,6 @@
         // Lấy route hiện tại từ URL
         const urlParams = new URLSearchParams(window.location.search);
         const currentAct = urlParams.get('act') || '/';
-        
-        // Map route đến menu item ID
-        const routeToMenuMap = {
-          'quan-ly-hdv': 'nav-hdv',
-          'view-them-hdv': 'nav-hdv',
-          'them-hdv': 'nav-hdv',
-          'xoa-hdv': 'nav-hdv',
-          'view-cap-nhat-hdv': 'nav-hdv',
-          'cap-nhat-hdv': 'nav-hdv',
-          
-          'quan-ly-tours': 'nav-tour',
-          'view-them-tour': 'nav-tour',
-          'them-tour': 'nav-tour',
-          'xoa-tour': 'nav-tour',
-          'view-cap-nhat-tour': 'nav-tour',
-          'cap-nhat-tour': 'nav-tour',
-          
-          'quan-ly-booking': 'nav-booking',
-          'xoa-booking': 'nav-booking',
-          'view-cap-nhat-booking': 'nav-booking',
-          'cap-nhat-booking': 'nav-booking',
-          'view-dat-booking': 'nav-booking',
-          'dat-booking': 'nav-booking',
-        };
-        
         // Lấy menu ID tương ứng
         const menuId = routeToMenuMap[currentAct];
         

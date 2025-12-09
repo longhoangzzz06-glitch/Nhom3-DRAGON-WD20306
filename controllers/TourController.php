@@ -21,17 +21,13 @@ class TourController {
         $tourModel = new TourModel();
         return $this->tourModel->getAllNhaCungCap();
     }
-    public function getAllChinhSach() {
-        $tourModel = new TourModel();
-        return $this->tourModel->getAllChinhSach();
-    }
 
     // function xử lý thêm tour
     public function viewThemTour() {
         require_once './views/tours/them_Tour.php';
     }
     public function themTour() {
-        $requiredFields = ['ten', 'danhMuc_id', 'chinhSach_id', 'ncc_id'];
+        $requiredFields = ['ten', 'danhMuc_id', 'chinhSach', 'gia'];
         $missingFields = [];
         foreach ($requiredFields as $field) {
             if (empty($_POST[$field])) {
@@ -42,8 +38,8 @@ class TourController {
             $fieldNames = [
                 'ten' => 'Tên Tour',
                 'danhMuc_id' => 'Danh mục',
-                'chinhSach_id' => 'Chính sách',
-                'ncc_id' => 'Nhà cung cấp'
+                'chinhSach' => 'Chính sách',
+                'gia' => 'Giá'
             ];
             $missingLabels = array_map(function($field) use ($fieldNames) {
                 return $fieldNames[$field] ?? $field;
@@ -90,85 +86,68 @@ class TourController {
 
     // function hiển thị form cập nhật tour
     public function viewCapNhatTour($id) {
-        $tour = $this->tourModel->getTourById($id);
+        $tourModel = new TourModel();
+        $nccModel = new NCCModel();
+        $nccTourModel = new NCCTourModel();    
+        $tour = $tourModel->getTourById($id);
+        $allNcc = $nccModel->layAllNCC();
+        $selectedNcc = $nccTourModel->getFullNccByTourId($id);
         require_once './views/tours/capNhat_Tour.php';
     }
     // function xử lý cập nhật tour
-    public function capNhatTour() {
+    public function capNhatTour($id, $data)
+    {
         try {
-            // Đảm bảo các trường bắt buộc đã được nhập
-            $requiredFields = ['ten', 'danhMuc_id', 'chinhSach_id', 'ncc_id'];
-            $missingFields = [];
-            foreach ($requiredFields as $field) {
-                if (empty($_POST[$field])) {
-                    $missingFields[] = $field;
+            /* ==== Validate ==== */
+            $required = ['ten', 'gia', 'danhMuc_id'];
+            foreach ($required as $f) {
+                if (empty($data[$f])) {
+                    echo "<script>
+                        alert('Vui lòng nhập đủ thông tin bắt buộc!');
+                        window.history.back();
+                    </script>";
+                    exit;
                 }
             }
-            if (!empty($missingFields)) {
-                $fieldNames = [
-                    'ten' => 'Tên Tour',
-                    'danhMuc_id' => 'Danh mục',
-                    'chinhSach_id' => 'Chính sách',
-                    'ncc_id' => 'Nhà cung cấp'
-                ];
-                $missingLabels = array_map(function($field) use ($fieldNames) {
-                    return $fieldNames[$field] ?? $field;
-                }, $missingFields);
-                $errorMsg = 'Vui lòng nhập các trường bắt buộc: ' . implode(', ', $missingLabels);
-                echo "<script>
-                    alert('" . addslashes($errorMsg) . "');
-                    window.history.back();
-                </script>";
-                exit();
-            }
-            $id = $_POST['id'];
-            $data = [
-                'ten' => $_POST['ten'],
-                'danhMuc_id' => $_POST['danhMuc_id'],
-                'moTa' => $_POST['moTa'] ?? '',
-                'chinhSach_id' => $_POST['chinhSach_id'],
-                'ncc_id' => $_POST['ncc_id'],
-                'trangThai' => $_POST['trangThai'] ?? 'Đang Đóng',
-                'gia' => $_POST['gia'] ?? 0,
-                'tgBatDau' => $_POST['tgBatDau'] ?? null,
-                'tgKetThuc' => $_POST['tgKetThuc'] ?? null
-            ];
-            $result = $this->tourModel->updateTour($id, $data);
-            if ($result) {
-                echo "<script>
-                    alert('Cập nhật tour thành công!');
-                    window.location.href = 'index.php?act=quan-ly-tours';
-                </script>";
-            } else {
-                echo "<script>
-                    alert('Cập nhật tour thất bại!');
-                    window.history.back();
-                </script>";
-            }
-            exit();
-        } catch (Exception $e) {
-            $errorMsg = $e->getMessage();
-            if (strpos($errorMsg, '1062') !== false || strpos($errorMsg, 'Duplicate entry') !== false) {
-                echo "<script>
-                    alert('Dữ liệu bị trùng - Dữ liệu này đã có trên hệ thống. Vui lòng nhập dữ liệu khác.');
-                    window.history.back();
-                </script>";
-                exit();
-            }
-            if (strpos($errorMsg, '1048') !== false || strpos($errorMsg, 'cannot be null') !== false) {
-                echo "<script>
-                    alert('Vui lòng nhập đủ các trường bắt buộc (Tên Tour, Danh mục, Chính sách, Nhà cung cấp).');
-                    window.history.back();
-                </script>";
-                exit();
-            }
+
+            /* ==== Xử lý dữ liệu ==== */
+            $data['gia'] = intval($data['gia']);
+            $data['soLuong'] = empty($data['soLuong']) ? 0 : intval($data['soLuong']);
+            $data['moTa'] = $data['moTa'] ?? '';
+
+            /* ==== Update Tour ==== */
+            $this->tourModel->updateTour($id, $data);
+
+            /* ==== DONE ==== */
             echo "<script>
-                alert('Lỗi khi cập nhật tour: " . addslashes($errorMsg) . "');
+                alert('Cập nhật tour thành công!');
+                window.location.href = 'index.php?act=quan-ly-tours';
+            </script>";
+            exit;
+
+        } catch (Exception $e) {
+
+            $msg = $e->getMessage();
+
+            // Trùng dữ liệu (Duplicate key)
+            if (strpos($msg, '1062') !== false || strpos($msg, 'Duplicate entry') !== false) {
+                $msg = "Dữ liệu bị trùng — vui lòng kiểm tra lại tên tour hoặc giá trị duy nhất khác!";
+            }
+
+            // Lỗi null
+            if (strpos($msg, '1048') !== false || strpos($msg, 'cannot be null') !== false) {
+                $msg = "Thiếu dữ liệu bắt buộc — vui lòng kiểm tra lại form!";
+            }
+
+            echo "<script>
+                alert('Lỗi: " . addslashes($msg) . "');
                 window.history.back();
             </script>";
-            exit();
+            exit;
         }
     }
+
+
 
     // Xử lý xóa tour theo ID
     public function xoaTour($id)     

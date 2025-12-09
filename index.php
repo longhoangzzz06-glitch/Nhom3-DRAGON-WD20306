@@ -1,8 +1,5 @@
 <?php
-session_start();
-ob_start();
-?>
-<?php require_once './views/chung/index.php'; ?>
-<?php
+require_once './views/chung/index.php';
+
 ob_end_flush();
 ?>

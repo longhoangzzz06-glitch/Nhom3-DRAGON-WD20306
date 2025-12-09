@@ -97,14 +97,25 @@ class HDVModel
 
     public function deleteHDV($id)
     {
-        $anh = $this->getPhotoById($id);
-        if ($anh) {
-            $path = 'uploads/img_HDV/' . $anh;
-            if (file_exists($path)) unlink($path);
+        // Trước hết kiểm tra HDV còn tour không
+        if ($this->countToursByHDV($id) > 0) {
+            return false; // Không xóa DB nếu còn tour
         }
+
         $sql = "DELETE FROM hdv WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute(['id' => $id]);
+    }
+
+
+    // Tính số tour đã phân công cho HDV
+    public function countToursByHDV($hdvId)
+    {
+        $sql = "SELECT COUNT(DISTINCT tour_id) as tour_count FROM don_hang WHERE hdv_id = :hdv_id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['hdv_id' => $hdvId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? intval($result['tour_count']) : 0;
     }
 
     // Cập nhật HDV
@@ -138,5 +149,35 @@ class HDVModel
             'taiKhoan_id'  => $data['taiKhoan_id'] ?? null,
             'id'           => $id,
         ]);
+    }
+    // Lấy danh sách tour được phân công cho HDV
+    public function getToursByHDV($hdvId)
+    {
+        $sql = "SELECT tour.*,
+                COUNT(DISTINCT dh.id) AS booking_count,
+                COUNT(DISTINCT dhkh.khachHang_id) AS customer_count
+            FROM (
+                SELECT 
+                    t.id,
+                    t.ten,
+                    t.gia,
+                    t.moTa,
+                    dm.ten AS danhMuc,
+                    MIN(dh.tgBatDau) AS tgBatDau,
+                    MAX(dh.tgKetThuc) AS tgKetThuc
+                FROM don_hang dh
+                INNER JOIN tour t ON dh.tour_id = t.id
+                LEFT JOIN tour_danh_muc dm ON t.danhMuc_id = dm.id
+                WHERE dh.hdv_id = :hdv_id
+                GROUP BY t.id
+            ) AS tour
+            LEFT JOIN don_hang dh ON dh.tour_id = tour.id
+            LEFT JOIN don_hang_khach_hang dhkh ON dh.id = dhkh.donHang_id
+            GROUP BY tour.id
+            ORDER BY tour.tgBatDau DESC";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute(['hdv_id' => $hdvId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
