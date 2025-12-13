@@ -53,12 +53,6 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <label class="col-md-3 col-form-label">Logo</label>
-                    <div class="col-md-9">
-                        <input type="file" name="logo" class="form-control">
-                    </div>
-                </div>
 
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Ghi chú</label>

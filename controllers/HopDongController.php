@@ -18,12 +18,18 @@ class HopDongController
     }
 
     // Form thêm hợp đồng mới
-    public function create()
+public function create()
 {
     $nccModel = new Supplier();
-    $nha_cung_caps = $nccModel->getAll(); // Lấy danh sách nhà cung cấp từ DB
-    require_once "./views/hop_dong/create.php";
+    $tourModel = new TourModel();
+
+    // ĐÚNG TÊN BIẾN NHƯ TRONG VIEW
+    $nha_cung_caps = $nccModel->getAll();
+    $tours = $tourModel->getAllTour();
+
+    include "./views/hop_dong/create.php";
 }
+
 
     // Lưu hợp đồng mới
     public function store()
@@ -47,18 +53,25 @@ class HopDongController
     }
 
     // Form sửa hợp đồng
-    public function edit()
-    {
-        $id = $_GET['id'] ?? null;
-        if (!$id) {
-            header("Location: index.php?act=hopdong");
-            exit;
-        }
-
-            $nccModel = new Supplier();
-            $nha_cung_caps = $nccModel->getAll();
-        require_once "./views/hop_dong/edit.php";
+public function edit()
+{
+    $id = $_GET['id'] ?? null;
+    if (!$id) {
+        header("Location: index.php?act=hopdong");
+        exit;
     }
+
+    $hopdong = $this->model->layMot($id);
+
+    $nccModel = new Supplier();
+    $tourModel = new TourModel();
+    
+    $nha_cung_caps = $nccModel->getAll();
+    $tours = $tourModel->getAllTour();
+
+    include "./views/hop_dong/edit.php";
+}
+
 
     // Cập nhật hợp đồng
     public function update()

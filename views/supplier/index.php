@@ -53,7 +53,6 @@
                 <thead class="table-light">
                     <tr>
                         <th>ID</th>
-                        <th>Logo</th>
                         <th>Tên NCC</th>
                         <th>Dịch vụ</th>
                         <th>SĐT</th>
@@ -69,15 +68,6 @@
                         <?php foreach ($suppliers as $s): ?>
                             <tr>
                                 <td><?= $s['id'] ?></td>
-
-                                <td>
-                                    <?php if (!empty($s['logo'])): ?>
-                                        <img src="<?= $s['logo'] ?>" 
-                                             style="width:40px; height:40px; border-radius:5px; object-fit:cover">
-                                    <?php else: ?>
-                                        <span class="text-muted">Không có</span>
-                                    <?php endif; ?>
-                                </td>
 
                                 <td><?= $s['ten']??'' ?></td>
                                 <td><?= $s['loai_dich_vu']??'' ?></td>

@@ -1,5 +1,7 @@
 <?php
-// Giả sử $nha_cung_caps và $tours được controller truyền sang
+// Kiểm tra biến để tránh lỗi
+$nha_cung_caps = $nha_cung_caps ?? [];
+$tours = $tours ?? [];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,23 +17,34 @@
     <h3 class="text-primary mb-4">Thêm Hợp Đồng</h3>
 
     <form action="index.php?act=them-hopdong" method="post" enctype="multipart/form-data">
+
+        <!-- SELECT NHÀ CUNG CẤP -->
         <div class="mb-3">
             <label class="form-label">Nhà cung cấp</label>
             <select name="nha_cung_cap_id" class="form-control" required>
                 <option value="">-- Chọn nhà cung cấp --</option>
+
                 <?php foreach($nha_cung_caps as $ncc): ?>
-                    <option value="<?= $ncc['id'] ?>"><?= $ncc['ten'] ?></option>
+                    <option value="<?= $ncc['id'] ?>">
+                        <?= $ncc['ten'] ?? $ncc['ten_ncc'] ?? 'Không có tên' ?>
+                    </option>
                 <?php endforeach; ?>
+
             </select>
         </div>
 
+        <!-- SELECT TOUR -->
         <div class="mb-3">
             <label class="form-label">Tour</label>
             <select name="tour_id" class="form-control" required>
                 <option value="">-- Chọn tour --</option>
+
                 <?php foreach($tours as $tour): ?>
-                    <option value="<?= $tour['id'] ?>"><?= $tour['ten_tour'] ?></option>
+                    <option value="<?= $tour['id'] ?>">
+                        <?= $tour['ten'] ?? $tour['ten_tour'] ?? 'Không có tên' ?>
+                    </option>
                 <?php endforeach; ?>
+
             </select>
         </div>
 

@@ -12,17 +12,39 @@ class DanhGiaNCC
     }
 
     public function layTatCa()
-    {
-        $stmt = $this->db->query("SELECT * FROM {$this->bang} ORDER BY id DESC");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+{
+    $sql = "
+        SELECT dg.*,
+               ncc.ten AS ten_ncc,
+               t.ten AS ten_tour
+        FROM danh_gia_ncc dg
+        JOIN nha_cung_cap ncc ON ncc.id = dg.nha_cung_cap_id
+        JOIN tour t ON t.id = dg.tour_id
+        ORDER BY dg.id DESC
+    ";
+
+    $stmt = $this->db->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
     public function tim($id)
-    {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->bang} WHERE id=:id");
-        $stmt->execute(['id'=>$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+{
+    $sql = "
+        SELECT dg.*,
+               ncc.ten AS ten_ncc,
+               t.ten AS ten_tour
+        FROM danh_gia_ncc dg
+        JOIN nha_cung_cap ncc ON ncc.id = dg.nha_cung_cap_id
+        JOIN tour t ON t.id = dg.tour_id
+        WHERE dg.id = :id
+    ";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute(['id'=>$id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 
     public function them($data)
     {

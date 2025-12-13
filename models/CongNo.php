@@ -12,17 +12,39 @@ class CongNo
     }
 
     public function layTatCa()
-    {
-        $stmt = $this->db->query("SELECT * FROM {$this->bang} ORDER BY id DESC");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+{
+    $sql = "
+        SELECT cn.*,
+               ncc.ten AS ten_ncc,
+               t.ten AS ten_tour
+        FROM cong_no cn
+        JOIN nha_cung_cap ncc ON ncc.id = cn.nha_cung_cap_id
+        JOIN tour t ON t.id = cn.tour_id
+        ORDER BY cn.id DESC
+    ";
+
+    $stmt = $this->db->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
     public function tim($id)
-    {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->bang} WHERE id = :id");
-        $stmt->execute(['id'=>$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+{
+    $sql = "
+        SELECT cn.*,
+               ncc.ten AS ten_ncc,
+               t.ten AS ten_tour
+        FROM cong_no cn
+        JOIN nha_cung_cap ncc ON ncc.id = cn.nha_cung_cap_id
+        JOIN tour t ON t.id = cn.tour_id
+        WHERE cn.id = :id
+    ";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 
     public function them($data)
     {
