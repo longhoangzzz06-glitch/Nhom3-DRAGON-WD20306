@@ -68,39 +68,38 @@ class SupplierController
     }
 
     public function update()
-    {
-        $id = $_POST['id'] ?? null;
-
-        if (!$id) {
-            header("Location: index.php?act=quan-ly-supplier");
-            exit;
-        }
-
-        $supplier = $this->model->find($id);
-
-        $logo = $supplier['logo'] ?? null;
-
-        if (!empty($_FILES['logo']['name'])) {
-            $logo = "uploads/suppliers/" . time() . "_" . $_FILES['logo']['name'];
-            move_uploaded_file($_FILES['logo']['tmp_name'], $logo);
-        }
-
-        $data = [
-            'ten' => $_POST['ten'] ?? '',
-            'loai_dich_vu' => $_POST['loai_dich_vu'] ?? '',
-            'dien_thoai' => $_POST['dien_thoai'] ?? '',
-            'email' => $_POST['email'] ?? '',
-            'dia_chi' => $_POST['dia_chi'] ?? '',
-            'ghi_chu' => $_POST['ghi_chu'] ?? '',
-            'logo' => $logo,
-            'id' => $id
-        ];
-
-        $this->model->update($id, $data);
-
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         header("Location: index.php?act=quan-ly-supplier");
         exit;
     }
+
+    $id = $_POST['id'];
+
+    $supplier = $this->model->find($id);
+    $logo = $supplier['logo'];
+
+    if (!empty($_FILES['logo']['name'])) {
+        $logo = "uploads/suppliers/" . time() . "_" . $_FILES['logo']['name'];
+        move_uploaded_file($_FILES['logo']['tmp_name'], $logo);
+    }
+
+    $data = [
+        'ten' => $_POST['ten'],
+        'loai_dich_vu' => $_POST['loai_dich_vu'],
+        'dien_thoai' => $_POST['dien_thoai'],
+        'email' => $_POST['email'],
+        'dia_chi' => $_POST['dia_chi'],
+        'ghi_chu' => $_POST['ghi_chu'],
+        'logo' => $logo
+    ];
+
+    $this->model->update($id, $data);
+
+    header("Location: index.php?act=quan-ly-supplier");
+    exit;
+}
+
 
     public function delete()
     {

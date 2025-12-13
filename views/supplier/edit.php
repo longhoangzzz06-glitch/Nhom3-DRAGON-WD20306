@@ -1,11 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="./views/chung/css/form.css" />
+    <title>Chỉnh sửa Nhà Cung Cấp</title>
+    <link rel="stylesheet" href="./views/chung/css/form.css">
 </head>
 <body>
 
@@ -17,16 +15,16 @@
         </div>
 
         <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" 
-                  action="index.php?act=cap-nhat-supplier&id=" . $supplier['id']>
+            <form method="POST"
+                  enctype="multipart/form-data"
+                  action="index.php?act=cap-nhat-supplier">
 
                 <input type="hidden" name="id" value="<?= $supplier['id'] ?>">
-                <!-- <input type="hidden" name="logo_old" value="<?= $supplier['logo'] ?>"> -->
 
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Tên nhà cung cấp *</label>
                     <div class="col-md-9">
-                        <input name="name" required class="form-control"
+                        <input name="ten" class="form-control" required
                                value="<?= $supplier['ten'] ?>">
                     </div>
                 </div>
@@ -34,7 +32,7 @@
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Loại dịch vụ *</label>
                     <div class="col-md-9">
-                        <input name="service_type" required class="form-control"
+                        <input name="loai_dich_vu" class="form-control" required
                                value="<?= $supplier['loai_dich_vu'] ?>">
                     </div>
                 </div>
@@ -42,7 +40,7 @@
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Điện thoại</label>
                     <div class="col-md-9">
-                        <input name="phone" class="form-control"
+                        <input name="dien_thoai" class="form-control"
                                value="<?= $supplier['dien_thoai'] ?>">
                     </div>
                 </div>
@@ -58,7 +56,7 @@
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Địa chỉ</label>
                     <div class="col-md-9">
-                        <input name="address" class="form-control"
+                        <input name="dia_chi" class="form-control"
                                value="<?= $supplier['dia_chi'] ?>">
                     </div>
                 </div>
@@ -66,13 +64,15 @@
                 <div class="row mb-3">
                     <label class="col-md-3 col-form-label">Ghi chú</label>
                     <div class="col-md-9">
-                        <textarea name="note" class="form-control" rows="3"><?= $supplier['ghi_chu'] ?></textarea>
+                        <textarea name="ghi_chu" class="form-control" rows="3"><?= $supplier['ghi_chu'] ?></textarea>
                     </div>
                 </div>
 
                 <div class="text-end">
                     <a href="index.php?act=quan-ly-supplier" class="btn btn-secondary">Quay lại</a>
-                    <a href="index.php?act=cap-nhat-supplier&id=" class="btn btn-warning px-4">Cập nhật</a>
+                    <button type="submit" class="btn btn-warning px-4">
+                        Cập nhật
+                    </button>
                 </div>
 
             </form>
@@ -80,8 +80,6 @@
 
     </div>
 </div>
-
-
 
 </body>
 </html>

@@ -1,4 +1,6 @@
 <?php 
+require_once "./models/TaiKhoanModel.php";
+require_once "./models/HDVModel.php"; 
 class HDVController
 {
     public $modelHDV;

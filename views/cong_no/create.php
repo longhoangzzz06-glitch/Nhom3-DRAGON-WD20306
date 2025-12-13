@@ -15,7 +15,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <form action="index.php?act=view-them-congno" method="POST">
+            <form action="index.php?act=them-congno" method="POST">
 
                 <!-- Nhà cung cấp -->
                 <div class="mb-3">

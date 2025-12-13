@@ -16,24 +16,39 @@ class HopDong
      */
     public function layTatCa()
     {
-        $stmt = $this->db->query("SELECT * FROM {$this->bang} ORDER BY id DESC");
+        $sql = "
+            SELECT 
+                hd.*,
+                ncc.ten AS ten_nha_cung_cap,
+                t.ten AS ten_tour
+            FROM hop_dong hd
+            JOIN nha_cung_cap ncc ON ncc.id = hd.nha_cung_cap_id
+            JOIN tour t ON t.id = hd.tour_id
+            ORDER BY hd.id DESC
+        ";
+
+        $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Lấy một hợp đồng theo ID
-     */
     public function layMot($id)
-    {
-        $sql = "
-        Select hd.*, t.ten AS tenTour From hop_dong hd
+{
+    $sql = "
+        SELECT 
+            hd.*,
+            ncc.ten AS ten_nha_cung_cap,
+            t.ten AS ten_tour
+        FROM hop_dong hd
+        JOIN nha_cung_cap ncc ON ncc.id = hd.nha_cung_cap_id
         JOIN tour t ON t.id = hd.tour_id
-        WHERE id = :id
-        ";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+        WHERE hd.id = :id
+    ";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 
     /**
      * Thêm hợp đồng mới

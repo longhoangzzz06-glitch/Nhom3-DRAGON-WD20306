@@ -15,8 +15,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <form action="index.php?act=view-them-danhgia" method="POST">
-
+            <form action="index.php?act=them-danhgia" method="POST">
                 <!-- Nhà cung cấp -->
                 <div class="mb-3">
                     <label class="form-label">Nhà cung cấp</label>
