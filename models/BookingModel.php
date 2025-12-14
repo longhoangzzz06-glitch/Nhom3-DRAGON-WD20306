@@ -15,6 +15,8 @@ class Booking {
     ============================================================ */
 
     // Lấy danh sách booking đầy đủ thông tin
+
+    
     public function getAllDonHang() 
     {
         $sql = "SELECT 
@@ -166,33 +168,33 @@ class Booking {
     ============================================================ */
 
     // Cập nhật booking
-    public function capNhatDonHang($id, $data)
-    {
-        $sql = "UPDATE don_hang
-                SET tour_id  = :tour_id,
-                    hdv_id   = :hdv_id,
-                    tgBatDau = :tgBatDau,
-                    tgKetThuc = :tgKetThuc,
-                    tgDatDon = :tgDatDon,
-                    datCoc   = :datCoc,
-                    tongTien = :tongTien,
-                    trangThai = :trangThai
-                WHERE id = :id";
+        public function capNhatDonHang($id, $data)
+        {
+            $sql = "UPDATE don_hang
+                    SET tour_id  = :tour_id,
+                        hdv_id   = :hdv_id,
+                        tgBatDau = :tgBatDau,
+                        tgKetThuc = :tgKetThuc,
+                        tgDatDon = :tgDatDon,
+                        datCoc   = :datCoc,
+                        tongTien = :tongTien,
+                        trangThai = :trangThai
+                    WHERE id = :id";
 
-        $stmt = $this->conn->prepare($sql);
+            $stmt = $this->conn->prepare($sql);
 
-        return $stmt->execute([
-            ':id'        => $id,
-            ':tour_id'   => $data['tour_id']   ?? null,
-            ':hdv_id'    => $data['hdv_id']    ?? null,
-            ':tgBatDau'  => $data['tgBatDau']  ?? null,
-            ':tgKetThuc' => $data['tgKetThuc'] ?? null,
-            ':tgDatDon'  => $data['tgDatDon']  ?? null,
-            ':datCoc'    => $data['datCoc']    ?? 0,
-            ':tongTien'  => $data['tongTien']  ?? 0,
-            ':trangThai' => $data['trangThai'] ?? 'Chờ xác nhận',
-        ]);
-    }
+            return $stmt->execute([
+                ':id'        => $id,
+                ':tour_id'   => $data['tour_id']   ?? null,
+                ':hdv_id'    => $data['hdv_id']    ?? null,
+                ':tgBatDau'  => $data['tgBatDau']  ?? null,
+                ':tgKetThuc' => $data['tgKetThuc'] ?? null,
+                ':tgDatDon'  => $data['tgDatDon']  ?? null,
+                ':datCoc'    => $data['datCoc']    ?? 0,
+                ':tongTien'  => $data['tongTien']  ?? 0,
+                ':trangThai' => $data['trangThai'] ?? 'Chờ xác nhận',
+            ]);
+        }
 
     // Check-in khách hoặc toàn bộ
     public function checkInDonHang($bookingId, $customerIds = [])

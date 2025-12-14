@@ -147,8 +147,6 @@ class TourController {
         }
     }
 
-
-
     // Xử lý xóa tour theo ID
     public function xoaTour($id)     
     {
@@ -176,5 +174,33 @@ class TourController {
             </script>";
             exit();
         }
+    }
+
+    public function apiGetTourPrice($tour_id)
+    {
+        // Kiểm tra xem ID có tồn tại và hợp lệ không
+        if (empty($tour_id)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Thiếu ID tour.']);
+            exit;
+        }
+        
+        // Lấy thông tin tour từ Model
+        $tour = $this->tourModel->getTourById($tour_id);
+
+        // Chuẩn bị dữ liệu trả về
+        header('Content-Type: application/json');
+        if ($tour) {
+            echo json_encode([
+                'success' => true,
+                'data'    => [
+                    'id' => $tour['id'],
+                    'gia' => $tour['gia'] // Giả sử 'gia' là trường giá trong DB
+                ]
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy tour.']);
+        }
+        exit;
     }
 }
