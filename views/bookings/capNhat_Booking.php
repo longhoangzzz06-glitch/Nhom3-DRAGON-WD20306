@@ -294,9 +294,9 @@
         <form action="index.php?act=cap-nhat-booking&id=<?php echo htmlspecialchars($donHang['id']);?>" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($donHang['id']); ?>">
             
-            <div class="form-group">
+            <div class="form-group" id="tour-select-group">
                 <label for="tour_id">Tour: <span style="color: red;">*</span></label>
-                <select id="tour_id" name="tour_id" required>
+                <select id="tour_id" name="tour_id" onchange="changeTour()" required>
                     <option value="">-- Chọn tour --</option>
                     <?php foreach ($tourList as $tour): ?>
                         <option value="<?php echo $tour['id']; ?>"
@@ -342,16 +342,6 @@
                     $dt = $donHang['tgDatDon'];
                     echo date('Y-m-d\TH:i', strtotime($dt));
                 ?>" required>
-            </div>
-
-            <div class="form-group">
-                <label for="datCoc">Đặt cọc (VND):</label>
-                <input type="number" id="datCoc" name="datCoc" value="<?php echo htmlspecialchars($donHang['datCoc']); ?>" min="0">
-            </div>
-
-            <div class="form-group">
-                <label for="tongTien">Tổng tiền (VND): <span style="color: red;">*</span></label>
-                <input type="number" id="tongTien" name="tongTien" value="<?php echo htmlspecialchars($donHang['tongTien']); ?>" required min="0">
             </div>
 
             <div class="form-group">
@@ -521,28 +511,19 @@
                     </div>
                     <div class="info-row">
                         <span class="info-label">Giá/khách:</span>
-                        <span class="info-value" id="display-giakg"><?= number_format($donHang['tour_gia'], 0, ',', '.') ?> VNĐ</span>
+                        <span class="info-value"><?= number_format($donHang['tour_gia'], 0, ',', '.') ?> VNĐ</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Tiền đặt cọc (20%):</span>
-                        <span class="info-value" id="display-datcoc">
-                            <?= number_format($gia * 0.2, 0, ',', '.') ?>
-                            VNĐ</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Tổng tiền dịch vụ:</span>
-                        <span class="info-value" id="display-tongdichvu">
-                            <?= number_format(($gia * $countKhachHang) - ($gia * 0.2), 0, ',', '.') ?>
-                            VNĐ
-                        </span>
+                        <span class="info-label">Đặt cọc (20%):</span>
+                        <span class="info-value"><?= number_format($gia * $countKhachHang * 0.2, 0, ',', '.') ?> VNĐ</span>
+                        <input type="hidden" id="datCoc" name="datCoc" value="<?= htmlspecialchars($gia * $countKhachHang * 0.2); ?>">
                     </div>
                     <div class="info-row" style="border-top: 2px solid #d1d5db; padding-top: 12px; margin-top: 12px;">
                         <span class="info-label" style="font-size: 16px; font-weight: 700;">Tổng cộng:</span>
                         <span class="price-highlight" id="display-tongtien"><?= number_format(($gia * $countKhachHang), 0, ',', '.') ?> VNĐ</span>
+                        <input type="hidden" id="tongTien" name="tongTien" value="<?= htmlspecialchars($gia * $countKhachHang); ?>">
                     </div>
                 </div>
-                <input type="hidden" id="tongTien" name="tongTien" value="<?= $donHang['tongTien'] ?>">
-                <input type="hidden" id="datCoc" name="datCoc" value="0">
             </div>
             <div class="button-group">
                 <button type="submit" class="btn-submit">Cập nhật</button>
@@ -552,8 +533,42 @@
     </div>
 </div>
 </div>
-
 <script>
+    function updatePayment() {
+        let soKhach = document.querySelectorAll(".customer-row").length;
+        
+        // Lấy giá từ option đang được chọn
+        let giaElement = document.querySelector("#tour_id").selectedOptions[0];
+        let gia = parseInt(giaElement.dataset.gia); // Lấy giá từ thuộc tính data-gia
+
+        let tongTien = soKhach * gia;
+        let datCoc = Math.round(tongTien * 0.2);
+
+        document.getElementById("tongTien").value = tongTien;
+        document.getElementById("datCoc").value = datCoc;
+
+        document.getElementById("display-sokhach").innerText = soKhach + " khách";
+        
+        // Thêm dòng này để cập nhật giá/khách
+        document.querySelector('.info-row:nth-child(2) .info-value').innerText = gia.toLocaleString() + " VNĐ";
+        
+        // Cập nhật dòng Đặt cọc
+        document.querySelector('.info-row:nth-child(3) .info-value').innerText = datCoc.toLocaleString() + " VNĐ";
+        document.getElementById("display-tongtien").innerText = tongTien.toLocaleString() + " VNĐ";
+
+    }
+
+    // Xóa hoặc bỏ trống nội dung hàm changeTour()
+    async function changeTour() {
+        // Không cần gọi API, chỉ cần gọi updatePayment() vì giá đã có trong option.
+        updatePayment();
+    }
+
+    // Khi đổi tour
+    document.getElementById("tour_id").addEventListener("change", updatePayment);
+
+    // Gọi lại sau thêm/xóa khách
+    window.updatePayment = updatePayment;
     /* ===========================================================
         HELPER FUNCTION – DÙNG CHUNG
     =========================================================== */

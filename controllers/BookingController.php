@@ -347,5 +347,48 @@ class BookingController {
             return;
         }
     }
+
+    public function apiGetTourPrice($tourId)
+    {
+        // Trả JSON, sạch output trước
+        while (ob_get_level()) { ob_end_clean(); }
+        header('Content-Type: application/json; charset=UTF-8');
+
+        try {
+            if (empty($tourId)) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Thiếu tham số tour_id'
+                ]);
+                return;
+            }
+
+            $tour = (new TourModel())->getTourById($tourId);
+            if (!$tour) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Tour không tồn tại'
+                ]);
+                return;
+            }
+
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'gia' => $tour['gia']
+                ]
+            ]);
+            return;
+        } catch (Throwable $e) {
+            // Trả lỗi dạng JSON để JS còn parse và hiện rõ thông tin lỗi
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            return;
+        }
+    }
 }
 ?>

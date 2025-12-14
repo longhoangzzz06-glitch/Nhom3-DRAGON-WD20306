@@ -50,6 +50,8 @@ match ($act) {
     'api-add-customer-link'=> (new BookingController())->apiAddCustomerLink(),
     'api-delete-customer'=> (new BookingController())->apiDeleteCustomer(),
 
+    'api-get-tour-price'=> (new TourController())->apiGetTourPrice($_GET['tour_id'] ?? 0),
+
     /* Trang Báo cáo Vận hành */
     // Hiển thị báo cáo
     'bao-cao-van-hanh'=> (new ReportController())->index(),
