@@ -252,6 +252,13 @@ ob_start();
         <nav class="mt-2">
           <!--begin::Sidebar Menu-->
           <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+            <!-- Báo cáo vận hành -->
+            <li class="nav-item" id="nav-report">
+                <a href="index.php?act=bao-cao-van-hanh" class="nav-link">
+                    <i class="nav-icon bi bi-graph-up"></i>
+                    <p class="nav-text">Báo cáo Vận hành</p>
+                </a>
+            </li>
             <!-- Quản lý Hướng dẫn viên -->
             <li class="nav-item" id="nav-hdv">
               <a href="index.php?act=quan-ly-hdv" class="nav-link">
@@ -273,6 +280,22 @@ ob_start();
                 <p class="nav-text">Quản lý Booking</p>
               </a>
             </li>
+
+            <!-- HDV - Lịch làm việc -->
+            <li class="nav-item" id="nav-hdv-work">
+                <a href="index.php?act=hdv-lich-lam-viec" class="nav-link">
+                    <i class="nav-icon bi bi-calendar3"></i>
+                    <p class="nav-text">Lịch làm việc HDV</p>
+                </a>
+            </li>   
+            <!-- HDV - Địa điểm -->
+            <li class="nav-item" id="nav-diadiem">
+                <a href="index.php?act=quan-ly-dia-diem" class="nav-link">
+                    <i class="nav-icon bi bi-geo-alt"></i>
+                    <p class="nav-text">Quản lý Địa điểm</p>
+                </a>  
+            </li>
+
             <!-- Quản lý Supplier -->
             <li class="nav-item" id="nav-supplier">
               <a href="index.php?act=quan-ly-supplier" class="nav-link">
@@ -337,6 +360,10 @@ ob_start();
       require_once './controllers/CongNoController.php';
       require_once './controllers/DanhGiaNCCController.php';
       require_once './controllers/TaiChinhTourController.php';
+      require_once './controllers/ReportController.php';
+      require_once './controllers/TourDetailController.php';
+      require_once './controllers/DiaDiemController.php';
+      require_once './controllers/NCCController.php';
 
 
       // Require toàn bộ file Models
@@ -349,10 +376,47 @@ ob_start();
       require_once './models/CongNo.php';
       require_once './models/DanhGiaNCC.php';
       require_once './models/TaiChinhTour.php';
+      require_once './models/ReportModel.php';
+      require_once './models/CheckpointModel.php';
+      require_once './models/RequirementModel.php';
+      require_once './models/ReviewModel.php';
+      require_once './models/TourDetailModel.php';
+      require_once './models/DiaDiemModel.php';
+      require_once './models/TaiKhoanModel.php';
+      require_once './models/NCCModel.php';
+      require_once './models/NCCTourModel.php';
 
 
       // Route
       $act = $_GET['act'] ?? '/';
+
+      $apiRoutes = [
+          'hdv-save-checkin',
+          'hdv-complete-checkpoint',
+          'hdv-save-requirement',
+          'hdv-delete-requirement',
+          'hdv-get-requirements-by-customer',
+          'hdv-save-diary',
+          'hdv-delete-diary',
+          'hdv-save-review',
+          'api-update-diadiem-order'
+      ];
+
+      // Nếu là API
+      if (in_array($act, $apiRoutes)) {
+              match ($act) {
+                  'hdv-save-checkin' => (new HDVController())->saveCheckin(),
+                  'hdv-complete-checkpoint' => (new HDVController())->completeCheckpoint(),
+                  'hdv-save-requirement' => (new HDVController())->saveRequirement(),
+                  'hdv-delete-requirement' => (new HDVController())->deleteRequirement(),
+                  'hdv-get-requirements-by-customer' => (new HDVController())->getRequirementsByCustomer(),
+                  'hdv-save-diary' => (new HDVController())->saveDiary(),
+                  'hdv-delete-diary' => (new HDVController())->deleteDiary(),
+                  'hdv-save-review' => (new HDVController())->saveReview(),
+                  'api-update-diadiem-order' => (new DiaDiemController())->updateOrder(),
+              };
+          exit;
+      }
 
       // Để bảo bảo tính chất chỉ gọi 1 hàm Controller để xử lý request thì mình sử dụng match
 
@@ -371,6 +435,7 @@ ob_start();
         // Xử lý cập nhật hướng dẫn viên
         'view-cap-nhat-hdv' => (new HDVController())->viewCapNhatHDV($_GET['id']),
         'cap-nhat-hdv' => (new HDVController())->capNhatHDV($_GET['id'], $_POST),
+        'lay-don-hang-khach-hang' => (new HDVController())->getDonHangKhachHang($_GET['don_hang_id']),
 
         /* Trang quản lý Tours */
         // Hiển thị danh sách Tours
@@ -403,6 +468,44 @@ ob_start();
         'api-add-customer' => (new BookingController())->apiAddCustomer(),
         'api-add-customer-link' => (new BookingController())->apiAddCustomerLink(),
         'api-delete-customer' => (new BookingController())->apiDeleteCustomer(),
+
+        'api-get-tour-price'=> (new TourController())->apiGetTourPrice($_GET['tour_id'] ?? 0),
+
+        /* Trang Báo cáo Vận hành */
+        // Hiển thị báo cáo
+        'bao-cao-van-hanh'=> (new ReportController())->index(),
+        // Xuất báo cáo Excel
+        'bao-cao-export'=> (new ReportController())->export(),
+
+        /* Trang HDV */
+        // Lịch làm việc của HDV - Controller
+        'hdv-lich-lam-viec'=> (new HDVController())->lichLamViec($_SESSION['hdv_id'] ?? 5),
+        // Chi tiết tour (lịch trình + danh sách khách) - TourDetailController
+        'hdv-chi-tiet-tour'=> (new TourDetailController())->chiTietTour($_GET['id'] ?? 0),
+        // Nhật ký tour - TourDetailController
+        'hdv-nhat-ky-tour'=> (new TourDetailController())->taoNhatKyTour($_GET['id'] ?? 0),
+        // Điểm danh khách hàng - Controller
+        'hdv-diem-danh'=> (new HDVController())->diemDanhKhach($_GET['id'] ?? 0),
+        // Yêu cầu đặc biệt từ khách hàng - Controller
+        'hdv-yeu-cau-dac-biet'=> (new HDVController())->yeuCauDacBiet($_GET['id'] ?? 0),
+        // Đánh giá tour - Controller
+        'hdv-danh-gia-tour'=> (new HDVController())->danhGiaTour($_GET['id'] ?? 0),
+
+        /* Trang quản lý Địa điểm */
+        // Hiển thị danh sách Địa điểm
+        'quan-ly-dia-diem'=> (new DiaDiemController())->danhSachDiaDiem(),
+        // Xử lý thêm Địa điểm
+        'view-them-dia-diem'=> (new DiaDiemController())->viewThemDiaDiem(),
+        'them-dia-diem'=> (new DiaDiemController())->themDiaDiem($_POST),
+        // Xử lý xóa Địa điểm
+        'xoa-dia-diem'=> (new DiaDiemController())->xoaDiaDiem($_GET['id']),
+        // Xử lý cập nhật Địa điểm
+        'view-cap-nhat-dia-diem'=> (new DiaDiemController())->viewCapNhatDiaDiem($_GET['id']),
+        'cap-nhat-dia-diem'=> (new DiaDiemController())->capNhatDiaDiem($_GET['id'], $_POST),
+
+        'them-ncc-vao-tour' => (new NCCController())->themNccVaoTour($_GET['tour_id'], $_GET['ncc_id']),
+        'xoaNccKhoiTour' => (new NCCController())->xoaNccKhoiTour($_GET['tour_id'], $_GET['ncc_id']),
+
         /* Trang quản lý Supplier */
         // Hiển thị danh sách Supplier
         'quan-ly-supplier' => (new SupplierController())->index(),
@@ -512,6 +615,24 @@ ob_start();
         'cap-nhat-booking': 'nav-booking',
         'view-dat-booking': 'nav-booking',
         'dat-booking': 'nav-booking',
+
+        'bao-cao-van-hanh': 'nav-report',
+        'bao-cao-export': 'nav-report',
+
+        'hdv-lich-lam-viec': 'nav-hdv-work',
+        'hdv-chi-tiet-tour': 'nav-hdv-work',
+        'hdv-nhat-ky-tour': 'nav-hdv-work',
+        'hdv-diem-danh': 'nav-hdv-work',
+        'hdv-yeu-cau-dac-biet': 'nav-hdv-work',
+        'hdv-danh-gia-tour': 'nav-hdv-work',
+
+        'quan-ly-dia-diem': 'nav-diadiem',
+        'view-them-dia-diem': 'nav-diadiem',
+        'them-dia-diem': 'nav-diadiem',
+        'xoa-dia-diem': 'nav-diadiem',
+        'view-cap-nhat-dia-diem': 'nav-diadiem',
+        'cap-nhat-dia-diem': 'nav-diadiem',
+
         'supplier': 'nav-supplier',
         'quan-ly-supplier': 'nav-supplier',
         'view-them-supplier': 'nav-supplier',
