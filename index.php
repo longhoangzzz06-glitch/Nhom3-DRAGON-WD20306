@@ -1,6 +1,79 @@
 <?php
 session_start();
 ob_start();
+
+// Require toàn bộ các file khai báo môi trường, thực thi,...(không require view)
+
+// Require file Common
+require_once './commons/env.php'; // Khai báo biến môi trường
+require_once './commons/function.php'; // Hàm hỗ trợ
+
+// Require toàn bộ file Controllers
+require_once './controllers/HDVController.php';
+require_once './controllers/TourController.php';
+require_once './controllers/BookingController.php';
+require_once './controllers/SupplierController.php';
+require_once './controllers/HopDongController.php';
+require_once './controllers/CongNoController.php';
+require_once './controllers/DanhGiaNCCController.php';
+require_once './controllers/TaiChinhTourController.php';
+require_once './controllers/ReportController.php';
+require_once './controllers/TourDetailController.php';
+require_once './controllers/DiaDiemController.php';
+require_once './controllers/NCCController.php';
+
+
+// Require toàn bộ file Models
+require_once './models/HDVModel.php';
+require_once './models/TourModel.php';
+require_once './models/BookingModel.php';
+require_once './models/SupplierModel.php';
+// Require toàn bộ file Models mới
+require_once './models/HopDong.php';
+require_once './models/CongNo.php';
+require_once './models/DanhGiaNCC.php';
+require_once './models/TaiChinhTour.php';
+require_once './models/ReportModel.php';
+require_once './models/CheckpointModel.php';
+require_once './models/RequirementModel.php';
+require_once './models/ReviewModel.php';
+require_once './models/TourDetailModel.php';
+require_once './models/DiaDiemModel.php';
+require_once './models/TaiKhoanModel.php';
+require_once './models/NCCModel.php';
+require_once './models/NCCTourModel.php';
+
+
+// Route
+$act = $_GET['act'] ?? '/';
+
+$apiRoutes = [
+    'hdv-save-checkin',
+    'hdv-complete-checkpoint',
+    'hdv-save-requirement',
+    'hdv-delete-requirement',
+    'hdv-get-requirements-by-customer',
+    'hdv-save-diary',
+    'hdv-delete-diary',
+    'hdv-save-review',
+    'api-update-diadiem-order'
+];
+
+// Nếu là API
+if (in_array($act, $apiRoutes)) {
+        match ($act) {
+            'hdv-save-checkin' => (new HDVController())->saveCheckin(),
+            'hdv-complete-checkpoint' => (new HDVController())->completeCheckpoint(),
+            'hdv-save-requirement' => (new HDVController())->saveRequirement(),
+            'hdv-delete-requirement' => (new HDVController())->deleteRequirement(),
+            'hdv-get-requirements-by-customer' => (new HDVController())->getRequirementsByCustomer(),
+            'hdv-save-diary' => (new HDVController())->saveDiary(),
+            'hdv-delete-diary' => (new HDVController())->deleteDiary(),
+            'hdv-save-review' => (new HDVController())->saveReview(),
+            'api-update-diadiem-order' => (new DiaDiemController())->updateOrder(),
+        };
+    exit;
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -345,79 +418,6 @@ ob_start();
     <!--begin::App Main-->
     <main class="app-main" style="margin: 0 20px">
       <?php
-      // Require toàn bộ các file khai báo môi trường, thực thi,...(không require view)
-
-      // Require file Common
-      require_once './commons/env.php'; // Khai báo biến môi trường
-      require_once './commons/function.php'; // Hàm hỗ trợ
-
-      // Require toàn bộ file Controllers
-      require_once './controllers/HDVController.php';
-      require_once './controllers/TourController.php';
-      require_once './controllers/BookingController.php';
-      require_once './controllers/SupplierController.php';
-      require_once './controllers/HopDongController.php';
-      require_once './controllers/CongNoController.php';
-      require_once './controllers/DanhGiaNCCController.php';
-      require_once './controllers/TaiChinhTourController.php';
-      require_once './controllers/ReportController.php';
-      require_once './controllers/TourDetailController.php';
-      require_once './controllers/DiaDiemController.php';
-      require_once './controllers/NCCController.php';
-
-
-      // Require toàn bộ file Models
-      require_once './models/HDVModel.php';
-      require_once './models/TourModel.php';
-      require_once './models/BookingModel.php';
-      require_once './models/SupplierModel.php';
-      // Require toàn bộ file Models mới
-      require_once './models/HopDong.php';
-      require_once './models/CongNo.php';
-      require_once './models/DanhGiaNCC.php';
-      require_once './models/TaiChinhTour.php';
-      require_once './models/ReportModel.php';
-      require_once './models/CheckpointModel.php';
-      require_once './models/RequirementModel.php';
-      require_once './models/ReviewModel.php';
-      require_once './models/TourDetailModel.php';
-      require_once './models/DiaDiemModel.php';
-      require_once './models/TaiKhoanModel.php';
-      require_once './models/NCCModel.php';
-      require_once './models/NCCTourModel.php';
-
-
-      // Route
-      $act = $_GET['act'] ?? '/';
-
-      $apiRoutes = [
-          'hdv-save-checkin',
-          'hdv-complete-checkpoint',
-          'hdv-save-requirement',
-          'hdv-delete-requirement',
-          'hdv-get-requirements-by-customer',
-          'hdv-save-diary',
-          'hdv-delete-diary',
-          'hdv-save-review',
-          'api-update-diadiem-order'
-      ];
-
-      // Nếu là API
-      if (in_array($act, $apiRoutes)) {
-              match ($act) {
-                  'hdv-save-checkin' => (new HDVController())->saveCheckin(),
-                  'hdv-complete-checkpoint' => (new HDVController())->completeCheckpoint(),
-                  'hdv-save-requirement' => (new HDVController())->saveRequirement(),
-                  'hdv-delete-requirement' => (new HDVController())->deleteRequirement(),
-                  'hdv-get-requirements-by-customer' => (new HDVController())->getRequirementsByCustomer(),
-                  'hdv-save-diary' => (new HDVController())->saveDiary(),
-                  'hdv-delete-diary' => (new HDVController())->deleteDiary(),
-                  'hdv-save-review' => (new HDVController())->saveReview(),
-                  'api-update-diadiem-order' => (new DiaDiemController())->updateOrder(),
-              };
-          exit;
-      }
-
       // Để bảo bảo tính chất chỉ gọi 1 hàm Controller để xử lý request thì mình sử dụng match
 
       match ($act) {
