@@ -1,6 +1,10 @@
 <?php 
 require_once "./models/TaiKhoanModel.php";
 require_once "./models/HDVModel.php"; 
+require_once "./models/CheckpointModel.php";
+require_once "./models/RequirementModel.php";
+require_once "./models/ReviewModel.php";
+require_once "./models/TourDetailModel.php";
 class HDVController
 {
     public $modelHDV;
@@ -577,19 +581,6 @@ class HDVController
                 }
             }
             
-            // Lưu đánh giá chính
-            // Luôn tạo mới đánh giá (theo yêu cầu: mỗi lần gửi là tạo mới, không update)
-            /*
-            if (isset($data['id']) && $data['id'] > 0) {
-                // Update
-                $result = $this->modelReview->updateReview($data['id'], $data);
-                $reviewId = $data['id'];
-            } else {
-                // Insert
-                $reviewId = $this->modelReview->addReview($data);
-                $result = $reviewId !== false;
-            }
-            */
             
             // Insert luôn
             $reviewId = $this->modelReview->addReview($data);
@@ -629,28 +620,47 @@ class HDVController
     }
 
     // Method 9: Lấy lịch làm việc của HDV
-    public function lichLamViec($hdvId = 5)
+    public function lichLamViec()
     {
+        $hdvId = $_SESSION['hdv_id'] ?? null;
+    
+        // Kiểm tra an toàn lần nữa (mặc dù hdv.php đã kiểm tra
         try {
-            // Nếu không truyền hdvId, lấy từ session
-            if (!$hdvId) {
-                $hdvId = $_SESSION['hdv_id'] ?? 5; // Fallback to 5 for testing
-            }
-
-            // Lấy danh sách tour của HDV từ model
             $tours = $this->modelHDV->getToursByHDV($hdvId);
             
             // Include view
             include './views/HDV/lich_lam_viec.php';
         } catch (Exception $e) {
             // Thông báo rõ ràng lỗi
-    echo "<pre>";
-    echo "LỖI XẢY RA:\n";
-    print_r($e->getMessage());
-    echo "\n\nSTACK TRACE:\n";
-    print_r($e->getTraceAsString());
-    echo "</pre>";
-    exit();
+            echo "<pre>";
+            echo "LỖI XẢY RA:\n";
+            print_r($e->getMessage());
+            echo "\n\nSTACK TRACE:\n";
+            print_r($e->getTraceAsString());
+            echo "</pre>";
+            exit();
+        }
+    }
+
+    public function trangChu()
+    {
+        // Bắt đầu session nếu chưa bắt đầu (an toàn)
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        $chucVu = $_SESSION['chucVu'] ?? '';
+
+        if ($chucVu === 'hdv') {
+            // Nếu là HDV, mặc định trang chủ là Lịch làm việc
+            $this->lichLamViec(); 
+        } elseif ($chucVu === 'admin') {
+            // Nếu là Admin, mặc định trang chủ là Báo cáo Vận hành
+            (new ReportController())->index();
+        } else {
+            // Lỗi, chuyển hướng về đăng nhập
+            header('Location: views/dangNhap/logout.php');
+            exit();
         }
     }
 
